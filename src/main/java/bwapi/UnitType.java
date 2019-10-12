@@ -365,7 +365,7 @@ public enum UnitType {
      * @return List of TechTypes containing ability information.
      */
     public List<TechType> abilities() {
-        return Collections.unmodifiableList(Arrays.asList(UnitTypeContainer.unitTechs[id]));
+        return Arrays.asList(UnitTypeContainer.unitTechs[id]);
     }
 
     /**
@@ -374,7 +374,7 @@ public enum UnitType {
      * @return List of UpgradeTypes containing upgrade types that will impact this unit type.
      */
     public List<UpgradeType> upgrades() {
-        return Collections.unmodifiableList(Arrays.asList(UnitTypeContainer.upgrades[id]));
+        return Arrays.asList(UnitTypeContainer.upgrades[id]);
     }
 
     /**
@@ -1194,7 +1194,7 @@ public enum UnitType {
      * @since 4.1.2
      */
     public List<UnitType> buildsWhat() {
-        return Collections.unmodifiableList(Arrays.asList(UnitTypeContainer.buildsWhat[id]));
+        return Arrays.asList(UnitTypeContainer.buildsWhat[id]);
     }
 
     /**
@@ -1209,7 +1209,7 @@ public enum UnitType {
      * @since 4.1.2
      */
     public List<TechType> researchesWhat() {
-        return Collections.unmodifiableList(Arrays.asList(UnitTypeContainer.researchesWhat[id]));
+        return Arrays.asList(UnitTypeContainer.researchesWhat[id]);
     }
 
     /**
@@ -1223,7 +1223,7 @@ public enum UnitType {
      * @since 4.1.2
      */
     public List<UpgradeType> upgradesWhat() {
-        return Collections.unmodifiableList(Arrays.asList(UnitTypeContainer.upgradesWhat[id]));
+        return Arrays.asList(UnitTypeContainer.upgradesWhat[id]);
     }
 
     /**

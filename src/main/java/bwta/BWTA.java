@@ -21,8 +21,12 @@ public class BWTA {
     private static List<Chokepoint> chokepoints;
     private static List<BaseLocation> baseLocations;
 
+    /**
+     * @deprecated this BWTA is fake and only translates BWTA calls to their respective BWEM calls.
+     * Use BWEM directly if possible.
+     */
+    @Deprecated
     public static void readMap(final Game game) {
-        System.err.println("WARNING: this BWTA is fake and only translates BWTA calls to their respective BWEM calls. Please use BWEM directly if possible.");
         bwem = new BWEM(game);
     }
 
@@ -33,31 +37,31 @@ public class BWTA {
         for (final Area a : bwem.getMap().getAreas()) {
             regionMap.put(a, new Region(a));
         }
-        regions = Collections.unmodifiableList(new ArrayList<>(regionMap.values()));
+        regions = new ArrayList<>(regionMap.values());
 
         chokeMap = new HashMap<>();
         for (final ChokePoint c : bwem.getMap().getChokePoints()) {
             chokeMap.put(c, new Chokepoint(c));
         }
-        chokepoints = Collections.unmodifiableList(new ArrayList<>(chokeMap.values()));
+        chokepoints = new ArrayList<>(chokeMap.values());
 
         baseMap = new HashMap<>();
         for (final Base b : bwem.getMap().getBases()) {
             baseMap.put(b, new BaseLocation(b));
         }
-        baseLocations = Collections.unmodifiableList(new ArrayList<>(baseMap.values()));
+        baseLocations = new ArrayList<>(baseMap.values());
     }
 
     public static List<Region> getRegions() {
-        return regions;
+        return new ArrayList<>(regions);
     }
 
     public static List<Chokepoint> getChokepoints() {
-        return chokepoints;
+        return new ArrayList<>(chokepoints);
     }
 
     public static List<BaseLocation> getBaseLocations() {
-        return baseLocations;
+        return new ArrayList<>(baseLocations);
     }
 
     public static List<BaseLocation> getStartLocations() {

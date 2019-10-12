@@ -74,7 +74,7 @@ public class Region implements Comparable<Region> {
                 inaccessibleBestDist = d;
             }
         }
-        this.neighbours = Collections.unmodifiableList(neighbours);
+        this.neighbours = neighbours;
     }
 
     /**
@@ -153,7 +153,7 @@ public class Region implements Comparable<Region> {
      * @return A reference to a List<Region> containing the neighboring Regions.
      */
     public List<Region> getNeighbors() {
-        return neighbours;
+        return new ArrayList<>(neighbours);
     }
 
     /**

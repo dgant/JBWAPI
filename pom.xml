@@ -149,5 +149,13 @@
             <version>${jmh.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.esotericsoftware/kryo -->
+        <dependency>
+            <groupId>com.esotericsoftware</groupId>
+            <artifactId>kryo</artifactId>
+            <version>5.0.0-RC4</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

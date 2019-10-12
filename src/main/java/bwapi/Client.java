@@ -50,6 +50,7 @@ class Client {
     private static final int maxNumGames = 8;
     private static final int gameTableSize = GAME_SIZE * maxNumGames;
     private RandomAccessFile pipe;
+    ClientData client;
     private ClientData.GameData data;
 
     Client() throws Exception {
@@ -93,7 +94,9 @@ class Client {
         final ByteBuffer sharedMemory = Kernel32.INSTANCE.MapViewOfFile(MappingKernel.INSTANCE
                         .OpenFileMapping(READ_WRITE, false, "Local\\bwapi_shared_memory_" + procID), READ_WRITE,
                 0, 0, GameData.SIZE).getByteBuffer(0, GameData.SIZE);
-        data = new ClientData(sharedMemory).new GameData(0);
+
+        client = new ClientData(sharedMemory);
+        data = client.new GameData(0);
 
         final int clientVersion = data.getClient_version();
         if (!SUPPORTED_BWAPI_VERSIONS.contains(clientVersion)) {

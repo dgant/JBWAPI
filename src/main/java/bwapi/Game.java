@@ -46,8 +46,8 @@ public class Game {
 
     private final Set<Integer> visibleUnits = new HashSet<>();
     private List<Unit> allUnits;
-    private final Client client;
-    private final GameData gameData;
+    Client client;
+    GameData gameData;
 
     private List<Unit> staticMinerals;
     private List<Unit> staticGeysers;
@@ -143,7 +143,7 @@ public class Game {
             forces[id] = new Force(gameData.getForces(id), id, this);
         }
 
-        forceSet = Collections.unmodifiableList(Arrays.asList(forces));
+        forceSet = Arrays.asList(forces);
 
         final int playerCount = gameData.getPlayerCount();
         players = new Player[playerCount];
@@ -151,7 +151,7 @@ public class Game {
             players[id] = new Player(gameData.getPlayers(id), id, this);
         }
 
-        playerSet = Collections.unmodifiableList(Arrays.asList(players));
+        playerSet = Arrays.asList(players);
 
         final int bulletCount = 100;
         bullets = new Bullet[bulletCount];
@@ -169,7 +169,7 @@ public class Game {
             region.updateNeighbours();
         }
 
-        regionSet = Collections.unmodifiableList(Arrays.asList(regions));
+        regionSet = Arrays.asList(regions);
 
         units = new Unit[10000];
 
@@ -185,7 +185,7 @@ public class Game {
         battleNet = gameData.isBattleNet();
         startLocations = IntStream.range(0, gameData.getStartLocationCount())
                 .mapToObj(i -> new TilePosition(gameData.getStartLocations(i)))
-                .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+                .collect(Collectors.toList());
         mapWidth = gameData.getMapWidth();
         mapHeight = gameData.getMapHeight();
         mapFileName = gameData.getMapFileName();
@@ -217,10 +217,10 @@ public class Game {
             }
         }
 
-        this.staticMinerals = Collections.unmodifiableList(staticMinerals);
-        this.staticGeysers = Collections.unmodifiableList(staticGeysers);
-        this.staticNeutralUnits = Collections.unmodifiableList(staticNeutralUnits);
-        this.allUnits = Collections.unmodifiableList(allUnits);
+        this.staticMinerals = staticMinerals;
+        this.staticGeysers = staticGeysers;
+        this.staticNeutralUnits = staticNeutralUnits;
+        this.allUnits = allUnits;
 
         buildable = new boolean[mapWidth][mapHeight];
         groundHeight = new int[mapWidth][mapHeight];
@@ -253,12 +253,12 @@ public class Game {
 
 
         enemies = playerSet.stream().filter(p -> !p.equals(self) && self.isEnemy(p))
-                .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+                .collect(Collectors.toList());
         allies = playerSet.stream().filter(p -> !p.equals(self) && self.isAlly(p))
-                .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+                .collect(Collectors.toList());
 
         observers = playerSet.stream().filter(p -> !p.equals(self) && p.isObserver())
-                .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+                .collect(Collectors.toList());
 
         latcom = gameData.getHasLatCom();
     }
@@ -290,9 +290,9 @@ public class Game {
         if (frame > 0) {
             allUnits = visibleUnits.stream()
                     .map(i -> units[i])
-                    .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+                    .collect(Collectors.toList());
         }
-        getAllUnits().forEach(u -> u.updatePosition(frame));
+        allUnits.forEach(u -> u.updatePosition(frame));
     }
 
     void addUnitCommand(final int type, final int unit, final int target, final int x, final int y, final int extra) {
@@ -333,7 +333,7 @@ public class Game {
      * @return List<Force> containing all forces in the game.
      */
     public List<Force> getForces() {
-        return forceSet;
+        return new ArrayList<>(forceSet);
     }
 
     /**
@@ -343,7 +343,7 @@ public class Game {
      * @return List<Player> containing all players in the game.
      */
     public List<Player> getPlayers() {
-        return playerSet;
+        return new ArrayList<>(playerSet);
     }
 
     /**
@@ -356,7 +356,7 @@ public class Game {
      * @return List<Unit> containing all known units in the game.
      */
     public List<Unit> getAllUnits() {
-        return allUnits;
+        return new ArrayList<>(allUnits);
     }
 
     /**
@@ -365,7 +365,7 @@ public class Game {
      * @return List<Unit> containing @minerals
      */
     public List<Unit> getMinerals() {
-        return getAllUnits().stream()
+        return allUnits.stream()
                 .filter(u -> u.getType().isMineralField())
                 .collect(Collectors.toList());
     }
@@ -376,7 +376,7 @@ public class Game {
      * @return List<Unit> containing @geysers
      */
     public List<Unit> getGeysers() {
-        return getAllUnits().stream()
+        return allUnits.stream()
                 .filter(u -> u.getType() == Resource_Vespene_Geyser)
                 .collect(Collectors.toList());
     }
@@ -388,7 +388,7 @@ public class Game {
      * @return List<Unit> containing all neutral units.
      */
     public List<Unit> getNeutralUnits() {
-        return getAllUnits().stream()
+        return allUnits.stream()
                 .filter(u -> u.getPlayer().equals(neutral()))
                 .collect(Collectors.toList());
     }
@@ -402,7 +402,7 @@ public class Game {
      * @return List<Unit> containing static @minerals
      */
     public List<Unit> getStaticMinerals() {
-        return staticMinerals;
+        return new ArrayList<>(staticMinerals);
     }
 
     /**
@@ -414,7 +414,7 @@ public class Game {
      * @return List<Unit> containing static @geysers
      */
     public List<Unit> getStaticGeysers() {
-        return staticGeysers;
+        return new ArrayList<>(staticGeysers);
     }
 
     /**
@@ -426,7 +426,7 @@ public class Game {
      * @return List<Unit> containing static neutral units
      */
     public List<Unit> getStaticNeutralUnits() {
-        return staticNeutralUnits;
+        return new ArrayList<>(staticNeutralUnits);
     }
 
     /**
@@ -687,7 +687,7 @@ public class Game {
      * given build tile.
      */
     public List<Unit> getUnitsOnTile(final int tileX, final int tileY, final UnitFilter pred) {
-        return getAllUnits().stream().filter(u -> {
+        return allUnits.stream().filter(u -> {
             final TilePosition tp = u.getTilePosition();
             return tp.x == tileX && tp.y == tileY && pred.test(u);
         }).collect(Collectors.toList());
@@ -709,7 +709,7 @@ public class Game {
      * given rectangle bounds.
      */
     public List<Unit> getUnitsInRectangle(final int left, final int top, final int right, final int bottom, final UnitFilter pred) {
-        return getAllUnits().stream()
+        return allUnits.stream()
                 .filter(u -> left <= u.getRight() && top <= u.getBottom() && right >= u.getLeft() && bottom >= u.getTop() && pred.test(u))
                 .collect(Collectors.toList());
     }
@@ -746,7 +746,7 @@ public class Game {
     }
 
     public List<Unit> getUnitsInRadius(final Position center, final int radius, final UnitFilter pred) {
-        return getAllUnits().stream()
+        return allUnits.stream()
                 .filter(u -> center.getApproxDistance(u.getPosition()) <= radius && pred.test(u))
                 .collect(Collectors.toList());
     }
@@ -1487,7 +1487,7 @@ public class Game {
      * @see Player#getStartLocation
      */
     public List<TilePosition> getStartLocations() {
-        return startLocations;
+        return new ArrayList<>(startLocations);
     }
 
     /**
@@ -1706,7 +1706,7 @@ public class Game {
      * @return List<Player> containing all allied players.
      */
     public List<Player> allies() {
-        return allies;
+        return new ArrayList<>(allies);
     }
 
     /**
@@ -1715,7 +1715,7 @@ public class Game {
      * @return List<Player> containing all enemy players.
      */
     public List<Player> enemies() {
-        return enemies;
+        return new ArrayList<>(enemies);
     }
 
     /**
@@ -1727,7 +1727,7 @@ public class Game {
      * @return List<Player> containing all currently active observer players
      */
     public List<Player> observers() {
-        return observers;
+        return new ArrayList<>(observers);
     }
 
     public void drawText(final CoordinateType ctype, final int x, final int y, final String string) {
@@ -2534,7 +2534,7 @@ public class Game {
      * @return List<Region> containing all map regions.
      */
     public List<Region> getAllRegions() {
-        return regionSet;
+        return new ArrayList<>(regionSet);
     }
 
     /**

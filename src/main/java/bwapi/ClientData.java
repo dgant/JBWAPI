@@ -1,10 +1,15 @@
 package bwapi;
 import java.nio.ByteBuffer;
 final class ClientData {
-    private final WrappedBuffer buffer;
+    WrappedBuffer buffer;
     ClientData(final ByteBuffer buffer) {
         this.buffer = new WrappedBuffer(buffer);
     }
+
+    WrappedBuffer getBuffer() {
+        return buffer;
+    }
+
     class UnitCommand {
         static final int SIZE = 24;
         private int myOffset;

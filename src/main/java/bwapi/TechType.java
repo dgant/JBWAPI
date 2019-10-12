@@ -294,7 +294,7 @@ public enum TechType {
      * @return Set of UnitTypes that can use this ability when researched.
      */
     public List<UnitType> whatUses() {
-        return Collections.unmodifiableList(Arrays.asList(techWhatUses[id]));
+        return Arrays.asList(techWhatUses[id]);
     }
 
     /**

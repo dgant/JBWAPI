@@ -8,6 +8,8 @@ import bwapi.Unit;
 import bwem.Base;
 
 import bwem.Neutral;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,10 +33,8 @@ public class BaseLocation {
         this.tilePosition = base.getLocation();
         this.minerals = 1;
         this.gas = 1;
-        this.mineralSet = base.getMinerals().stream().map(Neutral::getUnit).collect(
-            collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
-        this.geyserSet =  base.getGeysers().stream().map(Neutral::getUnit).collect(
-            collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+        this.mineralSet = base.getMinerals().stream().map(Neutral::getUnit).collect(Collectors.toList());
+        this.geyserSet =  base.getGeysers().stream().map(Neutral::getUnit).collect(Collectors.toList());
         this.island = base.getArea().getAccessibleNeighbors().isEmpty();
         this.mineralOnly = !mineralSet.isEmpty() && geyserSet.isEmpty();
         this.startLocation = base.isStartingLocation();
@@ -61,11 +61,11 @@ public class BaseLocation {
     }
 
     public List<Unit> getMinerals() {
-        return mineralSet;
+        return new ArrayList<>(mineralSet);
     }
 
     public List<Unit> getGeysers() {
-        return geyserSet;
+        return new ArrayList<>(geyserSet);
     }
 
     public double getGroundDistance(final BaseLocation other) {

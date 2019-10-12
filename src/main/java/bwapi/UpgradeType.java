@@ -309,7 +309,7 @@ public enum UpgradeType {
      * @return Set of unit types that passively use this upgrade type.
      */
     public List<UnitType> whatUses() {
-        return Collections.unmodifiableList(Arrays.asList(upgradeWhatUses[id]));
+        return Arrays.asList(upgradeWhatUses[id]);
     }
 
     /**
