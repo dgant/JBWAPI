@@ -19,7 +19,6 @@ import static bwapi.WeaponType.*;
  * @see Race
  */
 public class Player implements Comparable<Player> {
-    private final PlayerData playerData;
     private final Game game;
     private final int id;
     private final String name;
@@ -36,15 +35,18 @@ public class Player implements Comparable<Player> {
         return self;
     }
 
-    Player(final PlayerData playerData, final int id, final Game game) {
-        this.playerData = playerData;
+    Player(final int id, final Game game) {
         this.game = game;
         this.id = id;
-        this.name = playerData.getName();
-        this.race = Race.idToEnum[playerData.getRace()];
-        this.playerType = PlayerType.idToEnum[playerData.getType()];
-        this.force = game.getForce(playerData.getForce());
-        this.startLocation = new TilePosition(playerData.getStartLocationX(), playerData.getStartLocationY());
+        this.name = getData().getName();
+        this.race = Race.idToEnum[getData().getRace()];
+        this.playerType = PlayerType.idToEnum[getData().getType()];
+        this.force = game.getForce(getData().getForce());
+        this.startLocation = new TilePosition(getData().getStartLocationX(), getData().getStartLocationY());
+    }
+
+    public PlayerData getData() {
+        return game.getData().getPlayers(id);
     }
 
     /**
@@ -127,7 +129,7 @@ public class Player implements Comparable<Player> {
         if (player == null || isNeutral() || player.isNeutral() || isObserver() || player.isObserver()) {
             return false;
         }
-        return playerData.isAlly(player.getID());
+        return getData().isAlly(player.getID());
     }
 
     /**
@@ -144,7 +146,7 @@ public class Player implements Comparable<Player> {
         if (player == null || isNeutral() || player.isNeutral() || isObserver() || player.isObserver()) {
             return false;
         }
-        return !playerData.isAlly(player.getID());
+        return !getData().isAlly(player.getID());
     }
 
     /**
@@ -175,7 +177,7 @@ public class Player implements Comparable<Player> {
      * @return true if this player has achieved victory, otherwise false
      */
     public boolean isVictorious() {
-        return playerData.isVictorious();
+        return getData().isVictorious();
     }
 
     /**
@@ -184,7 +186,7 @@ public class Player implements Comparable<Player> {
      * @return true if the player is defeated, otherwise false
      */
     public boolean isDefeated() {
-        return playerData.isDefeated();
+        return getData().isDefeated();
     }
 
     /**
@@ -193,7 +195,7 @@ public class Player implements Comparable<Player> {
      * @return true if the player has left the game, otherwise false
      */
     public boolean leftGame() {
-        return playerData.getLeftGame();
+        return getData().getLeftGame();
     }
 
     /**
@@ -204,7 +206,7 @@ public class Player implements Comparable<Player> {
      * @return Amount of minerals that the player currently has for spending.
      */
     public int minerals() {
-        int minerals = playerData.getMinerals();
+        int minerals = getData().getMinerals();
         if (game.isLatComEnabled() && self().minerals.valid(game.getFrameCount())) {
             return minerals + self().minerals.get();
         }
@@ -219,7 +221,7 @@ public class Player implements Comparable<Player> {
      * @return Amount of gas that the player currently has for spending.
      */
     public int gas() {
-        int gas = playerData.getGas();
+        int gas = getData().getGas();
         if (game.isLatComEnabled() && self().gas.valid(game.getFrameCount())) {
             return gas + self().gas.get();
         }
@@ -236,7 +238,7 @@ public class Player implements Comparable<Player> {
      * @return Cumulative amount of minerals that the player has gathered.
      */
     public int gatheredMinerals() {
-        return playerData.getGatheredMinerals();
+        return getData().getGatheredMinerals();
     }
 
     /**
@@ -249,7 +251,7 @@ public class Player implements Comparable<Player> {
      * @return Cumulative amount of gas that the player has gathered.
      */
     public int gatheredGas() {
-        return playerData.getGatheredGas();
+        return getData().getGatheredGas();
     }
 
     /**
@@ -261,7 +263,7 @@ public class Player implements Comparable<Player> {
      * @return Cumulative amount of minerals that the player has spent repairing.
      */
     public int repairedMinerals() {
-        return playerData.getRepairedMinerals();
+        return getData().getRepairedMinerals();
     }
 
     /**
@@ -273,7 +275,7 @@ public class Player implements Comparable<Player> {
      * @return Cumulative amount of gas that the player has spent repairing.
      */
     public int repairedGas() {
-        return playerData.getRepairedGas();
+        return getData().getRepairedGas();
     }
 
     /**
@@ -285,7 +287,7 @@ public class Player implements Comparable<Player> {
      * @return Cumulative amount of minerals that the player has received from refunds.
      */
     public int refundedMinerals() {
-        return playerData.getRefundedMinerals();
+        return getData().getRefundedMinerals();
     }
 
     /**
@@ -297,7 +299,7 @@ public class Player implements Comparable<Player> {
      * @return Cumulative amount of gas that the player has received from refunds.
      */
     public int refundedGas() {
-        return playerData.getRefundedGas();
+        return getData().getRefundedGas();
     }
 
     /**
@@ -343,7 +345,7 @@ public class Player implements Comparable<Player> {
      * @see #supplyUsed
      */
     public int supplyTotal(final Race race) {
-        return playerData.getSupplyTotal(race.id);
+        return getData().getSupplyTotal(race.id);
     }
 
     public int supplyUsed() {
@@ -358,7 +360,7 @@ public class Player implements Comparable<Player> {
      * @see #supplyTotal
      */
     public int supplyUsed(final Race race) {
-        int supplyUsed = playerData.getSupplyUsed(race.id);
+        int supplyUsed = getData().getSupplyUsed(race.id);
         if (game.isLatComEnabled() && self().supplyUsed[race.id].valid(game.getFrameCount())) {
             return supplyUsed + self().supplyUsed[race.id].get();
         }
@@ -384,7 +386,7 @@ public class Player implements Comparable<Player> {
      * @see #incompleteUnitCount
      */
     public int allUnitCount(final UnitType unit) {
-        return playerData.getAllUnitCount(unit.id);
+        return getData().getAllUnitCount(unit.id);
     }
 
     public int visibleUnitCount() {
@@ -403,7 +405,7 @@ public class Player implements Comparable<Player> {
      * @see #incompleteUnitCount
      */
     public int visibleUnitCount(final UnitType unit) {
-        return playerData.getVisibleUnitCount(unit.id);
+        return getData().getVisibleUnitCount(unit.id);
     }
 
     public int completedUnitCount() {
@@ -422,7 +424,7 @@ public class Player implements Comparable<Player> {
      * @see #incompleteUnitCount
      */
     public int completedUnitCount(final UnitType unit) {
-        return playerData.getCompletedUnitCount(unit.id);
+        return getData().getCompletedUnitCount(unit.id);
     }
 
     public int incompleteUnitCount() {
@@ -459,7 +461,7 @@ public class Player implements Comparable<Player> {
      * @return The total number of units that have died throughout the game.
      */
     public int deadUnitCount(final UnitType unit) {
-        return playerData.getDeadUnitCount(unit.id);
+        return getData().getDeadUnitCount(unit.id);
     }
 
     public int killedUnitCount() {
@@ -473,7 +475,7 @@ public class Player implements Comparable<Player> {
      * @return The total number of units that the player has killed throughout the game.
      */
     public int killedUnitCount(final UnitType unit) {
-        return playerData.getKilledUnitCount(unit.id);
+        return getData().getKilledUnitCount(unit.id);
     }
 
     /**
@@ -486,7 +488,7 @@ public class Player implements Comparable<Player> {
      * @see #getMaxUpgradeLevel
      */
     public int getUpgradeLevel(final UpgradeType upgrade) {
-        return playerData.getUpgradeLevel(upgrade.id);
+        return getData().getUpgradeLevel(upgrade.id);
     }
 
     /**
@@ -499,7 +501,7 @@ public class Player implements Comparable<Player> {
      * @see #isResearchAvailable
      */
     public boolean hasResearched(final TechType tech) {
-        return playerData.getHasResearched(tech.id);
+        return getData().getHasResearched(tech.id);
     }
 
     /**
@@ -514,7 +516,7 @@ public class Player implements Comparable<Player> {
         if (game.isLatComEnabled() && self().isResearching[tech.id].valid(game.getFrameCount())) {
             return self().isResearching[tech.id].get();
         }
-        return playerData.isResearching(tech.id);
+        return getData().isResearching(tech.id);
     }
 
     /**
@@ -528,7 +530,7 @@ public class Player implements Comparable<Player> {
         if (game.isLatComEnabled() && self().isUpgrading[upgrade.id].valid(game.getFrameCount())) {
             return self().isResearching[upgrade.id].get();
         }
-        return playerData.isUpgrading(upgrade.id);
+        return getData().isUpgrading(upgrade.id);
     }
 
     /**
@@ -537,7 +539,7 @@ public class Player implements Comparable<Player> {
      * @return {@link Color} object that represents the color of the current player.
      */
     public Color getColor() {
-        return new Color(playerData.getColor());
+        return new Color(getData().getColor());
     }
 
     /**
@@ -547,7 +549,7 @@ public class Player implements Comparable<Player> {
      * @return character code to use for text in Broodwar.
      */
     public Text getTextColor() {
-        switch (playerData.getColor()) {
+        switch (getData().getColor()) {
             case 111: // red
                 return Text.BrightRed;
             case 165: // blue
@@ -724,7 +726,7 @@ public class Player implements Comparable<Player> {
      * @return The player's unit score.
      */
     public int getUnitScore() {
-        return playerData.getTotalUnitScore();
+        return getData().getTotalUnitScore();
     }
 
     /**
@@ -733,7 +735,7 @@ public class Player implements Comparable<Player> {
      * @return The player's kill score.
      */
     public int getKillScore() {
-        return playerData.getTotalKillScore();
+        return getData().getTotalKillScore();
     }
 
     /**
@@ -742,7 +744,7 @@ public class Player implements Comparable<Player> {
      * @return The player's building score.
      */
     public int getBuildingScore() {
-        return playerData.getTotalBuildingScore();
+        return getData().getTotalBuildingScore();
     }
 
     /**
@@ -751,7 +753,7 @@ public class Player implements Comparable<Player> {
      * @return The player's razing score.
      */
     public int getRazingScore() {
-        return playerData.getTotalRazingScore();
+        return getData().getTotalRazingScore();
     }
 
     /**
@@ -761,7 +763,7 @@ public class Player implements Comparable<Player> {
      * @return The player's custom score.
      */
     public int getCustomScore() {
-        return playerData.getCustomScore();
+        return getData().getCustomScore();
     }
 
     /**
@@ -772,7 +774,7 @@ public class Player implements Comparable<Player> {
      * the game.
      */
     public boolean isObserver() {
-        return !playerData.isParticipating();
+        return !getData().isParticipating();
     }
 
     /**
@@ -783,7 +785,7 @@ public class Player implements Comparable<Player> {
      * @return Maximum upgrade level of the given upgrade type.
      */
     public int getMaxUpgradeLevel(final UpgradeType upgrade) {
-        return playerData.getMaxUpgradeLevel(upgrade.id);
+        return getData().getMaxUpgradeLevel(upgrade.id);
     }
 
     /**
@@ -794,7 +796,7 @@ public class Player implements Comparable<Player> {
      * @return true if the tech type is available to the player for research.
      */
     public boolean isResearchAvailable(final TechType tech) {
-        return playerData.isResearchAvailable(tech.id);
+        return getData().isResearchAvailable(tech.id);
     }
 
     /**
@@ -805,7 +807,7 @@ public class Player implements Comparable<Player> {
      * @return true if the unit type is available to the player.
      */
     public boolean isUnitAvailable(final UnitType unit) {
-        return playerData.isUnitAvailable(unit.id);
+        return getData().isUnitAvailable(unit.id);
     }
 
     public boolean hasUnitTypeRequirement(final UnitType unit) {

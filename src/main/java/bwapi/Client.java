@@ -51,7 +51,6 @@ class Client {
     private static final int gameTableSize = GAME_SIZE * maxNumGames;
     private RandomAccessFile pipe;
     ClientData client;
-    private ClientData.GameData data;
 
     Client() throws Exception {
         final ByteBuffer gameList = Kernel32.INSTANCE.MapViewOfFile(MappingKernel.INSTANCE.OpenFileMapping(READ_WRITE, false, "Local\\bwapi_shared_memory_game_list"), READ_WRITE, 0, 0, gameTableSize).getByteBuffer(0, GAME_SIZE * 8);
@@ -76,11 +75,11 @@ class Client {
      * For test purposes only
      */
     Client(ByteBuffer buffer) {
-        data = new ClientData(buffer).new GameData(0);
+        client = new ClientData(buffer);
     }
 
-    public GameData data() {
-        return data;
+    public GameData getData() {
+        return client.data;
     }
 
     private void connect(final int procID) throws Exception {
@@ -96,14 +95,13 @@ class Client {
                 0, 0, GameData.SIZE).getByteBuffer(0, GameData.SIZE);
 
         client = new ClientData(sharedMemory);
-        data = client.new GameData(0);
 
-        final int clientVersion = data.getClient_version();
+        final int clientVersion = getData().getClient_version();
         if (!SUPPORTED_BWAPI_VERSIONS.contains(clientVersion)) {
             throw new Exception("BWAPI version mismatch, expected one of: " + SUPPORTED_BWAPI_VERSIONS + ", got: " + clientVersion);
         }
 
-        System.out.println("Connected to BWAPI@" + procID + " with version " + clientVersion + ": " + data.getRevision());
+        System.out.println("Connected to BWAPI@" + procID + " with version " + clientVersion + ": " + getData().getRevision());
     }
 
     void update(final EventHandler handler) throws Exception {
@@ -112,8 +110,8 @@ class Client {
         while (code != 2) {
             code = pipe.readByte();
         }
-        for (int i = 0; i < data.getEventCount(); ++i) {
-            handler.operation(data.getEvents(i));
+        for (int i = 0; i < getData().getEventCount(); ++i) {
+            handler.operation(getData().getEvents(i));
         }
     }
 
@@ -129,35 +127,35 @@ class Client {
 
 
     String eventString(final int s) {
-        return data.getEventStrings(s);
+        return getData().getEventStrings(s);
     }
 
     int addString(final String s) {
-        int stringCount = data.getStringCount();
+        int stringCount = getData().getStringCount();
         if (stringCount >= MAX_COUNT) throw new IllegalStateException("Too many strings!");
-        data.setStringCount(stringCount + 1);
-        data.setStrings(stringCount, s);
+        getData().setStringCount(stringCount + 1);
+        getData().setStrings(stringCount, s);
         return stringCount;
     }
 
     Shape addShape() {
-        int shapeCount = data.getShapeCount();
+        int shapeCount = getData().getShapeCount();
         if (shapeCount >= MAX_COUNT) throw new IllegalStateException("Too many shapes!");
-        data.setShapeCount(shapeCount + 1);
-        return data.getShapes(shapeCount);
+        getData().setShapeCount(shapeCount + 1);
+        return getData().getShapes(shapeCount);
     }
 
     Command addCommand() {
-        final int commandCount = data.getCommandCount();
+        final int commandCount = getData().getCommandCount();
         if (commandCount >= MAX_COUNT) throw new IllegalStateException("Too many commands!");
-        data.setCommandCount(commandCount + 1);
-        return data.getCommands(commandCount);
+        getData().setCommandCount(commandCount + 1);
+        return getData().getCommands(commandCount);
     }
 
     ClientData.UnitCommand addUnitCommand() {
-        int unitCommandCount = data.getUnitCommandCount();
+        int unitCommandCount = getData().getUnitCommandCount();
         if (unitCommandCount >= MAX_COUNT) throw new IllegalStateException("Too many unit commands!");
-        data.setUnitCommandCount(unitCommandCount + 1);
-        return data.getUnitCommands(unitCommandCount);
+        getData().setUnitCommandCount(unitCommandCount + 1);
+        return getData().getUnitCommands(unitCommandCount);
     }
 }

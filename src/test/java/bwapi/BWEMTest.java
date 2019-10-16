@@ -46,17 +46,22 @@ public class BWEMTest {
         byte[] bytes = out.toByteArray();
         ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.length);
         buffer.put(bytes);
-        game.client.client.buffer = new WrappedBuffer(buffer);
+        game.client = new Client(buffer);
+
         System.out.println(game.client.client.buffer.getInt(0));
         return game;
     }
 
     @Test
     public void simple() throws IOException {
-        Game game = loadGameState("src/test/resources/2019-10-12_(2)Hitchhiker1.1.scx");
+        Game game = loadGameState("src/test/resources/2019-10-16_v0.8.2_(2)Hitchhiker1.1.scx");
         System.out.println(game.mapFileName());
+        for (Unit unit : game.getAllUnits()) {
+            System.out.println(unit.getID() + ": " + unit.getType() + " - " + unit.getOrder());
+        }
+
         for (Unit unit : game.self().getUnits()) {
-            System.out.println(unit.getID());
+            System.out.println(unit.getID() + ": " + unit.getType() + " - " + unit.getOrder());
         }
     }
 }

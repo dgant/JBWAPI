@@ -19,10 +19,14 @@ public class Force implements Comparable<Force> {
     private final int id;
     private final String name;
 
-    Force(final ForceData forceData, int id, final Game game) {
+    Force(int id, final Game game) {
         this.game = game;
         this.id = id;
-        this.name = forceData.getName();
+        this.name = getData().getName();
+    }
+
+    ForceData getData() {
+        return game.getData().getForces(id);
     }
 
     /**

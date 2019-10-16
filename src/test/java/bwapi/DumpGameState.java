@@ -25,7 +25,7 @@ class DumpGameState extends DefaultBWListener {
     public void onStart() {
         game = bwClient.getGame();
 
-        name = "test/resources/" + cal.get(YEAR) + "-" + (cal.get(MONTH) + 1) + "-" +  cal.get(DATE) + "_" + game.mapFileName();
+        name = "src/test/resources/" + cal.get(YEAR) + "-" + (cal.get(MONTH) + 1) + "-" +  cal.get(DATE) + "_v" + bwClient.version() + "_" + game.mapFileName();
 
         try {
             dumpGame();

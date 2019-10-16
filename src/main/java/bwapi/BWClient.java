@@ -6,6 +6,7 @@ import java.util.Objects;
  * Client class to connect to the game with.
  */
 public class BWClient {
+    private static final String version = "0.8.2";
     private final BWEventListener eventListener;
 
     private Client client;
@@ -22,6 +23,13 @@ public class BWClient {
      */
     public Game getGame() {
         return handler == null ? null : handler.getGame();
+    }
+
+    /**
+     * Returns the JBWAPI version (NOT the BWAPI version)
+     */
+    public String version() {
+        return version;
     }
 
     /**
@@ -43,10 +51,10 @@ public class BWClient {
         handler = new EventHandler(eventListener, client);
 
         try {
-            while (!client.data().isInGame()) {
+            while (!client.getData().isInGame()) {
                 client.update(handler);
             }
-            while (client.data().isInGame()) {
+            while (client.getData().isInGame()) {
                 client.update(handler);
             }
         } catch (final Exception exception) {

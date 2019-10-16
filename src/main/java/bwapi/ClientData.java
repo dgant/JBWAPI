@@ -2,12 +2,10 @@ package bwapi;
 import java.nio.ByteBuffer;
 final class ClientData {
     WrappedBuffer buffer;
+    GameData data;
     ClientData(final ByteBuffer buffer) {
         this.buffer = new WrappedBuffer(buffer);
-    }
-
-    WrappedBuffer getBuffer() {
-        return buffer;
+        this.data = this.new GameData(0);
     }
 
     class UnitCommand {
@@ -1317,6 +1315,9 @@ final class ClientData {
         int getClearanceLevel() {
             int offset = myOffset + 0;
             return buffer.getInt(offset);
+        }
+        public WrappedBuffer getBuffer() {
+            return buffer;
         }
         void setClearanceLevel(int value) {
             buffer.putInt(myOffset + 0, value);

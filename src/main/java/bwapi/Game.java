@@ -47,7 +47,6 @@ public class Game {
     private final Set<Integer> visibleUnits = new HashSet<>();
     private List<Unit> allUnits;
     Client client;
-    GameData gameData;
 
     private List<Unit> staticMinerals;
     private List<Unit> staticGeysers;
@@ -103,7 +102,10 @@ public class Game {
 
     Game(Client client) {
         this.client = client;
-        this.gameData = client.data();
+    }
+    
+    GameData getData() {
+        return client.getData();
     }
 
     private static boolean hasPower(final int x, final int y, final UnitType unitType, final List<Unit> pylons) {
@@ -137,18 +139,18 @@ public class Game {
     void init() {
         visibleUnits.clear();
 
-        final int forceCount = gameData.getForceCount();
+        final int forceCount = getData().getForceCount();
         forces = new Force[forceCount];
         for (int id = 0; id < forceCount; id++) {
-            forces[id] = new Force(gameData.getForces(id), id, this);
+            forces[id] = new Force(id, this);
         }
 
         forceSet = Arrays.asList(forces);
 
-        final int playerCount = gameData.getPlayerCount();
+        final int playerCount = getData().getPlayerCount();
         players = new Player[playerCount];
         for (int id = 0; id < playerCount; id++) {
-            players[id] = new Player(gameData.getPlayers(id), id, this);
+            players[id] = new Player(id, this);
         }
 
         playerSet = Arrays.asList(players);
@@ -156,13 +158,13 @@ public class Game {
         final int bulletCount = 100;
         bullets = new Bullet[bulletCount];
         for (int id = 0; id < bulletCount; id++) {
-            bullets[id] = new Bullet(gameData.getBullets(id), id, this);
+            bullets[id] = new Bullet(getData().getBullets(id), id, this);
         }
 
-        final int regionCount = gameData.getRegionCount();
+        final int regionCount = getData().getRegionCount();
         regions = new Region[regionCount];
         for (int id = 0; id < regionCount; id++) {
-            regions[id] = new Region(gameData.getRegions(id), this);
+            regions[id] = new Region(id,this);
         }
 
         for (final Region region : regions) {
@@ -173,32 +175,32 @@ public class Game {
 
         units = new Unit[10000];
 
-        randomSeed = gameData.getRandomSeed();
+        randomSeed = getData().getRandomSeed();
 
-        revision = gameData.getRevision();
-        debug = gameData.isDebug();
-        self = players[gameData.getSelf()];
-        enemy = players[gameData.getEnemy()];
-        neutral = players[gameData.getNeutral()];
-        replay = gameData.isReplay();
-        multiplayer = gameData.isMultiplayer();
-        battleNet = gameData.isBattleNet();
-        startLocations = IntStream.range(0, gameData.getStartLocationCount())
-                .mapToObj(i -> new TilePosition(gameData.getStartLocations(i)))
+        revision = getData().getRevision();
+        debug = getData().isDebug();
+        self = players[getData().getSelf()];
+        enemy = players[getData().getEnemy()];
+        neutral = players[getData().getNeutral()];
+        replay = getData().isReplay();
+        multiplayer = getData().isMultiplayer();
+        battleNet = getData().isBattleNet();
+        startLocations = IntStream.range(0, getData().getStartLocationCount())
+                .mapToObj(i -> new TilePosition(getData().getStartLocations(i)))
                 .collect(Collectors.toList());
-        mapWidth = gameData.getMapWidth();
-        mapHeight = gameData.getMapHeight();
-        mapFileName = gameData.getMapFileName();
-        mapPathName = gameData.getMapPathName();
-        mapName = gameData.getMapName();
-        mapHash = gameData.getMapHash();
+        mapWidth = getData().getMapWidth();
+        mapHeight = getData().getMapHeight();
+        mapFileName = getData().getMapFileName();
+        mapPathName = getData().getMapPathName();
+        mapName = getData().getMapName();
+        mapHash = getData().getMapHash();
 
         final List<Unit> staticMinerals = new ArrayList<>();
         final List<Unit> staticGeysers = new ArrayList<>();
         final List<Unit> staticNeutralUnits = new ArrayList<>();
         final List<Unit> allUnits = new ArrayList<>();
-        for (int id = 0; id < gameData.getInitialUnitCount(); id++) {
-            final Unit unit = new Unit(gameData.getUnits(id), id, this);
+        for (int id = 0; id < getData().getInitialUnitCount(); id++) {
+            final Unit unit = new Unit(id, this);
             //skip ghost units
             if (unit.getInitialType() == UnitType.Terran_Marine && unit.getInitialHitPoints() == 0) {
                 continue;
@@ -227,15 +229,15 @@ public class Game {
         mapTileRegionID = new short[mapWidth][mapHeight];
         for (int x = 0; x < mapWidth; x++) {
             for (int y = 0; y < mapHeight; y++) {
-                buildable[x][y] = gameData.isBuildable(x, y);
-                groundHeight[x][y] = gameData.getGroundHeight(x, y);
-                mapTileRegionID[x][y] = gameData.getMapTileRegionId(x, y);
+                buildable[x][y] = getData().isBuildable(x, y);
+                groundHeight[x][y] = getData().getGroundHeight(x, y);
+                mapTileRegionID[x][y] = getData().getMapTileRegionId(x, y);
             }
         }
         walkable = new boolean[mapWidth * TILE_WALK_FACTOR][mapHeight * TILE_WALK_FACTOR];
         for (int i = 0; i < mapWidth * TILE_WALK_FACTOR; i++) {
             for (int j = 0; j < mapHeight * TILE_WALK_FACTOR; j++) {
-                walkable[i][j] = gameData.isWalkable(i, j);
+                walkable[i][j] = getData().isWalkable(i, j);
             }
         }
 
@@ -243,9 +245,9 @@ public class Game {
         mapSplitTilesRegion1 = new short[REGION_DATA_SIZE];
         mapSplitTilesRegion2 = new short[REGION_DATA_SIZE];
         for (int i = 0; i < REGION_DATA_SIZE; i++) {
-            mapSplitTilesMiniTileMask[i] = gameData.getMapSplitTilesMiniTileMask(i);
-            mapSplitTilesRegion1[i] = gameData.getMapSplitTilesRegion1(i);
-            mapSplitTilesRegion2[i] = gameData.getMapSplitTilesRegion2(i);
+            mapSplitTilesMiniTileMask[i] = getData().getMapSplitTilesMiniTileMask(i);
+            mapSplitTilesRegion1[i] = getData().getMapSplitTilesRegion1(i);
+            mapSplitTilesRegion2[i] = getData().getMapSplitTilesRegion2(i);
         }
 
         mapPixelWidth = mapWidth * TilePosition.SIZE_IN_PIXELS;
@@ -260,7 +262,7 @@ public class Game {
         observers = playerSet.stream().filter(p -> !p.equals(self) && p.isObserver())
                 .collect(Collectors.toList());
 
-        latcom = gameData.getHasLatCom();
+        latcom = getData().getHasLatCom();
     }
 
     void unitCreate(final int id) {
@@ -272,7 +274,7 @@ public class Game {
         }
 
         if (units[id] == null) {
-            final Unit u = new Unit(gameData.getUnits(id), id, this);
+            final Unit u = new Unit(id, this);
             units[id] = u;
         }
     }
@@ -365,7 +367,7 @@ public class Game {
      * @return List<Unit> containing @minerals
      */
     public List<Unit> getMinerals() {
-        return allUnits.stream()
+        return getAllUnits().stream()
                 .filter(u -> u.getType().isMineralField())
                 .collect(Collectors.toList());
     }
@@ -376,7 +378,7 @@ public class Game {
      * @return List<Unit> containing @geysers
      */
     public List<Unit> getGeysers() {
-        return allUnits.stream()
+        return getAllUnits().stream()
                 .filter(u -> u.getType() == Resource_Vespene_Geyser)
                 .collect(Collectors.toList());
     }
@@ -388,7 +390,7 @@ public class Game {
      * @return List<Unit> containing all neutral units.
      */
     public List<Unit> getNeutralUnits() {
-        return allUnits.stream()
+        return getAllUnits().stream()
                 .filter(u -> u.getPlayer().equals(neutral()))
                 .collect(Collectors.toList());
     }
@@ -448,8 +450,8 @@ public class Game {
      * @return Set of Positions giving the coordinates of nuke locations.
      */
     public List<Position> getNukeDots() {
-        return IntStream.range(0, gameData.getNukeDotCount())
-                .mapToObj(id -> new Position(gameData.getNukeDots(id)))
+        return IntStream.range(0, getData().getNukeDotCount())
+                .mapToObj(id -> new Position(getData().getNukeDots(id)))
                 .collect(Collectors.toList());
     }
 
@@ -512,7 +514,7 @@ public class Game {
      * @see GameType
      */
     public GameType getGameType() {
-        return GameType.idToEnum[gameData.getGameType()];
+        return GameType.idToEnum[getData().getGameType()];
     }
 
     /**
@@ -523,7 +525,7 @@ public class Game {
      * @see Latency
      */
     public Latency getLatency() {
-        return Latency.idToEnum[gameData.getLatency()];
+        return Latency.idToEnum[getData().getLatency()];
     }
 
     /**
@@ -533,7 +535,7 @@ public class Game {
      * @return Number of logical frames that have elapsed since the game started as an integer.
      */
     public int getFrameCount() {
-        return gameData.getFrameCount();
+        return getData().getFrameCount();
     }
 
     /**
@@ -543,7 +545,7 @@ public class Game {
      * @return The number of logical frames that the replay contains.
      */
     public int getReplayFrameCount() {
-        return gameData.getReplayFrameCount();
+        return getData().getReplayFrameCount();
     }
 
     /**
@@ -553,7 +555,7 @@ public class Game {
      * @see #getAverageFPS
      */
     public int getFPS() {
-        return gameData.getFps();
+        return getData().getFps();
     }
 
     /**
@@ -564,7 +566,7 @@ public class Game {
      * @see #getFPS
      */
     public double getAverageFPS() {
-        return gameData.getAverageFPS();
+        return getData().getAverageFPS();
     }
 
     /**
@@ -573,7 +575,7 @@ public class Game {
      * @return {@link Position} indicating the location of the mouse. Returns {@link Position#Unknown} if {@link Flag#UserInput} is disabled.
      */
     public Position getMousePosition() {
-        return new Position(gameData.getMouseX(), gameData.getMouseY());
+        return new Position(getData().getMouseX(), getData().getMouseY());
     }
 
     /**
@@ -585,7 +587,7 @@ public class Game {
      * @see MouseButton
      */
     public boolean getMouseState(final MouseButton button) {
-        return gameData.getMouseState(button.id);
+        return getData().getMouseState(button.id);
     }
 
     /**
@@ -597,7 +599,7 @@ public class Game {
      * @see Key
      */
     public boolean getKeyState(final Key key) {
-        return gameData.getKeyState(key.id);
+        return getData().getKeyState(key.id);
     }
 
     /**
@@ -608,7 +610,7 @@ public class Game {
      * @see #setScreenPosition
      */
     public Position getScreenPosition() {
-        return new Position(gameData.getScreenX(), gameData.getScreenY());
+        return new Position(getData().getScreenX(), getData().getScreenY());
     }
 
     public void setScreenPosition(final Position p) {
@@ -653,7 +655,7 @@ public class Game {
      * @see Flag
      */
     public boolean isFlagEnabled(final Flag flag) {
-        return gameData.getFlags(flag.id);
+        return getData().getFlags(flag.id);
     }
 
     /**
@@ -687,7 +689,7 @@ public class Game {
      * given build tile.
      */
     public List<Unit> getUnitsOnTile(final int tileX, final int tileY, final UnitFilter pred) {
-        return allUnits.stream().filter(u -> {
+        return getAllUnits().stream().filter(u -> {
             final TilePosition tp = u.getTilePosition();
             return tp.x == tileX && tp.y == tileY && pred.test(u);
         }).collect(Collectors.toList());
@@ -709,7 +711,7 @@ public class Game {
      * given rectangle bounds.
      */
     public List<Unit> getUnitsInRectangle(final int left, final int top, final int right, final int bottom, final UnitFilter pred) {
-        return allUnits.stream()
+        return getAllUnits().stream()
                 .filter(u -> left <= u.getRight() && top <= u.getBottom() && right >= u.getLeft() && bottom >= u.getTop() && pred.test(u))
                 .collect(Collectors.toList());
     }
@@ -746,7 +748,7 @@ public class Game {
     }
 
     public List<Unit> getUnitsInRadius(final Position center, final int radius, final UnitFilter pred) {
-        return allUnits.stream()
+        return getAllUnits().stream()
                 .filter(u -> center.getApproxDistance(u.getPosition()) <= radius && pred.test(u))
                 .collect(Collectors.toList());
     }
@@ -947,7 +949,7 @@ public class Game {
         if (!position.isValid(this)) {
             return false;
         }
-        return buildable[position.x][position.y] && (!includeBuildings || !gameData.isOccupied(position.x, position.y));
+        return buildable[position.x][position.y] && (!includeBuildings || !getData().isOccupied(position.x, position.y));
     }
 
     /**
@@ -967,7 +969,7 @@ public class Game {
         if (!position.isValid(this)) {
             return false;
         }
-        return gameData.isVisible(position.x, position.y);
+        return getData().isVisible(position.x, position.y);
     }
 
     /**
@@ -988,7 +990,7 @@ public class Game {
         if (!position.isValid(this)) {
             return false;
         }
-        return gameData.isExplored(position.x, position.y);
+        return getData().isExplored(position.x, position.y);
     }
 
     /**
@@ -1006,7 +1008,7 @@ public class Game {
         if (!position.isValid(this)) {
             return false;
         }
-        return gameData.getHasCreep(position.x, position.y);
+        return getData().getHasCreep(position.x, position.y);
     }
 
     public boolean hasPowerPrecise(final int x, final int y) {
@@ -1532,7 +1534,7 @@ public class Game {
      * @return true if the client is in a game, and false if it is not.
      */
     public boolean isInGame() {
-        return gameData.isInGame();
+        return getData().isInGame();
     }
 
     /**
@@ -1564,7 +1566,7 @@ public class Game {
      * @see #resumeGame
      */
     public boolean isPaused() {
-        return gameData.isPaused();
+        return getData().isPaused();
     }
 
     /**
@@ -1663,8 +1665,8 @@ public class Game {
         if (!isFlagEnabled(Flag.UserInput)) {
             return Collections.emptyList();
         }
-        return IntStream.range(0, gameData.getSelectedUnitCount())
-                .mapToObj(i -> units[gameData.getSelectedUnits(i)])
+        return IntStream.range(0, getData().getSelectedUnitCount())
+                .mapToObj(i -> units[getData().getSelectedUnits(i)])
                 .collect(Collectors.toList());
     }
 
@@ -2118,7 +2120,7 @@ public class Game {
      * @see #getRemainingLatencyFrames
      */
     public int getLatencyFrames() {
-        return gameData.getLatencyFrames();
+        return getData().getLatencyFrames();
     }
 
     /**
@@ -2130,7 +2132,7 @@ public class Game {
      * @see #getRemainingLatencyTime
      */
     public int getLatencyTime() {
-        return gameData.getLatencyTime();
+        return getData().getLatencyTime();
     }
 
     /**
@@ -2143,7 +2145,7 @@ public class Game {
      * @see #getLatencyFrames
      */
     public int getRemainingLatencyFrames() {
-        return gameData.getRemainingLatencyFrames();
+        return getData().getRemainingLatencyFrames();
     }
 
     /**
@@ -2156,7 +2158,7 @@ public class Game {
      * @see #getLatencyTime
      */
     public int getRemainingLatencyTime() {
-        return gameData.getRemainingLatencyTime();
+        return getData().getRemainingLatencyTime();
     }
 
     /**
@@ -2198,7 +2200,7 @@ public class Game {
      */
     public void setLatCom(final boolean isEnabled) {
         //update shared memory
-        gameData.setHasLatCom(isEnabled);
+        getData().setHasLatCom(isEnabled);
         //update internal memory
         latcom = isEnabled;
         //update server
@@ -2213,7 +2215,7 @@ public class Game {
      * @return An integer value representing the instance number.
      */
     public int getInstanceNumber() {
-        return gameData.getInstanceID();
+        return getData().getInstanceID();
     }
 
     public int getAPM() {
@@ -2227,7 +2229,7 @@ public class Game {
      * @return The number of actions that the bot has executed per minute, on average.
      */
     public int getAPM(final boolean includeSelects) {
-        return includeSelects ? gameData.getBotAPM_selects() : gameData.getBotAPM_noselects();
+        return includeSelects ? getData().getBotAPM_selects() : getData().getBotAPM_noselects();
     }
 
     /**
@@ -2304,7 +2306,7 @@ public class Game {
      * @see #setGUI
      */
     boolean isGUIEnabled() {
-        return gameData.getHasGUI();
+        return getData().getHasGUI();
     }
 
     /**
@@ -2317,7 +2319,7 @@ public class Game {
      * @see #isGUIEnabled
      */
     public void setGUI(boolean enabled) {
-        gameData.setHasGUI(enabled);
+        getData().setHasGUI(enabled);
         //queue up command for server so it also applies the change
         addCommand(CommandType.SetGui, enabled ? 1 : 0, 0);
     }
@@ -2421,7 +2423,7 @@ public class Game {
      * @return Time, in seconds, that the game has elapsed as an integer.
      */
     public int elapsedTime() {
-        return gameData.getElapsedTime();
+        return getData().getElapsedTime();
     }
 
     /**
@@ -2525,7 +2527,7 @@ public class Game {
      * @return Integer containing the time (in game seconds) on the countdown timer.
      */
     public int countdownTimer() {
-        return gameData.getCountdownTimer();
+        return getData().getCountdownTimer();
     }
 
     /**

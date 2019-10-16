@@ -22,7 +22,6 @@ import java.util.Objects;
  * @see Unit#getRegion
  */
 public class Region implements Comparable<Region> {
-    private final RegionData regionData;
     private final Game game;
 
     private final int id;
@@ -40,19 +39,22 @@ public class Region implements Comparable<Region> {
 
     private List<Region> neighbours;
 
-    Region(final RegionData regionData, final Game game) {
-        this.regionData = regionData;
+    Region(final int id, final Game game) {
         this.game = game;
-        this.id = regionData.getId();
-        this.regionGroupID = regionData.islandID();
-        this.center = new Position(regionData.getCenter_x(), regionData.getCenter_y());
-        this.higherGround = regionData.isHigherGround();
-        this.defensePriority = regionData.getPriority();
-        this.accessible = regionData.isAccessible();
-        this.boundsLeft = regionData.getLeftMost();
-        this.boundsTop = regionData.getTopMost();
-        this.boundsRight = regionData.getRightMost();
-        this.boundsBottom = regionData.getBottomMost();
+        this.id = id;
+        this.regionGroupID = getData().islandID();
+        this.center = new Position(getData().getCenter_x(), getData().getCenter_y());
+        this.higherGround = getData().isHigherGround();
+        this.defensePriority = getData().getPriority();
+        this.accessible = getData().isAccessible();
+        this.boundsLeft = getData().getLeftMost();
+        this.boundsTop = getData().getTopMost();
+        this.boundsRight = getData().getRightMost();
+        this.boundsBottom = getData().getBottomMost();
+    }
+
+    public RegionData getData() {
+        return game.getData().getRegions(id);
     }
 
     void updateNeighbours() {
@@ -60,8 +62,8 @@ public class Region implements Comparable<Region> {
         int inaccessibleBestDist = Integer.MAX_VALUE;
 
         final List<Region> neighbours = new ArrayList<>();
-        for (int i = 0; i < regionData.getNeighborCount(); i++) {
-            final Region region = game.getRegion(regionData.getNeighbors(i));
+        for (int i = 0; i < getData().getNeighborCount(); i++) {
+            final Region region = game.getRegion(getData().getNeighbors(i));
             neighbours.add(region);
             final int d = getDistance(region);
             if (region.isAccessible()) {
