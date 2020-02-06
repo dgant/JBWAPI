@@ -163,15 +163,15 @@ public class Color {
         return closestColor[red >> 2][green >> 2][blue >> 2];
     }
 
-    public int red() {
+    int red() {
         return id < 256 ? defaultPalette[id].rgbRed : 0;
     }
 
-    public int green() {
+    int green() {
         return id < 256 ? defaultPalette[id].rgbGreen : 0;
     }
 
-    public int blue() {
+    int blue() {
         return id < 256 ? defaultPalette[id].rgbBlue : 0;
     }
 
