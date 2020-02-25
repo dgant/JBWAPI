@@ -882,6 +882,17 @@ public class Game {
     }
 
     /**
+     * Checks if the given coordinates are valid, given a scale.
+     * @param x The x coordinate of the position
+     * @param y The y coordinate of the position
+     * @param scalar The number of pixels each represented by X==1 or Y==1
+     * @return True if the coordinates and scale reflect a position within the bounds of the map; False otherwise     *
+     */
+    public boolean isValid(final int x, final int y, final int scalar) {
+        return x >= 0 && y >= 0 && scalar * x < mapPixelWidth() && scalar * y < mapPixelHeight();
+    }
+
+    /**
      * Checks if the given mini-tile position is walkable.
      * <p>
      * This function only checks if the static terrain is walkable. Its current occupied
@@ -893,14 +904,11 @@ public class Game {
      * @return true if the mini-tile is walkable and false if it is impassable for ground units.
      */
     public boolean isWalkable(final int walkX, final int walkY) {
-        return isWalkable(new WalkPosition(walkX, walkY));
+        return isValid(walkX, walkY, WalkPosition.SIZE_IN_PIXELS) && walkable[walkX][walkY];
     }
 
     public boolean isWalkable(final WalkPosition position) {
-        if (!position.isValid(this)) {
-            return false;
-        }
-        return walkable[position.x][position.y];
+        return isWalkable(position.x, position.y);
     }
 
     /**
@@ -918,14 +926,14 @@ public class Game {
      * .
      */
     public int getGroundHeight(final int tileX, final int tileY) {
-        return getGroundHeight(new TilePosition(tileX, tileY));
+        if (!isValid(tileX, tileY, TilePosition.SIZE_IN_PIXELS)) {
+            return 0;
+        }
+        return groundHeight[tileX][tileY];
     }
 
     public int getGroundHeight(final TilePosition position) {
-        if (!position.isValid(this)) {
-            return 0;
-        }
-        return groundHeight[position.x][position.y];
+        return getGroundHeight(position.x, position.y);
     }
 
     public boolean isBuildable(final int tileX, final int tileY) {
@@ -945,7 +953,7 @@ public class Game {
      * occupying the tile.
      */
     public boolean isBuildable(final int tileX, final int tileY, final boolean includeBuildings) {
-        return isBuildable(new TilePosition(tileX, tileY), includeBuildings);
+        return isValid(tileX, tileY, TilePosition.SIZE_IN_PIXELS) && buildable[tileX][tileY] && (!includeBuildings || !gameData.isOccupied(tileX, tileY));
     }
 
     public boolean isBuildable(final TilePosition position) {
@@ -953,10 +961,7 @@ public class Game {
     }
 
     public boolean isBuildable(final TilePosition position, final boolean includeBuildings) {
-        if (!position.isValid(this)) {
-            return false;
-        }
-        return buildable[position.x][position.y] && (!includeBuildings || !gameData.isOccupied(position.x, position.y));
+        return isBuildable(position.x, position.y, includeBuildings);
     }
 
     /**
@@ -969,14 +974,11 @@ public class Game {
      * be false.
      */
     public boolean isVisible(final int tileX, final int tileY) {
-        return isVisible(new TilePosition(tileX, tileY));
+        return isValid(tileX, tileY, TilePosition.SIZE_IN_PIXELS) && gameData.isVisible(tileX, tileY);
     }
 
     public boolean isVisible(final TilePosition position) {
-        if (!position.isValid(this)) {
-            return false;
-        }
-        return gameData.isVisible(position.x, position.y);
+        return isVisible(position.x, position.y);
     }
 
     /**
@@ -990,14 +992,11 @@ public class Game {
      * @see #isVisible
      */
     public boolean isExplored(final int tileX, final int tileY) {
-        return isExplored(new TilePosition(tileX, tileY));
+        return isValid(tileX, tileY, TilePosition.SIZE_IN_PIXELS) && gameData.isExplored(tileX, tileY);
     }
 
     public boolean isExplored(final TilePosition position) {
-        if (!position.isValid(this)) {
-            return false;
-        }
-        return gameData.isExplored(position.x, position.y);
+        return isExplored(position.x, position.y);
     }
 
     /**
@@ -1008,14 +1007,11 @@ public class Game {
      * @return true if the given tile has creep on it, false if the given tile does not have creep, or if it is concealed by the fog of war.
      */
     public boolean hasCreep(final int tileX, final int tileY) {
-        return hasCreep(new TilePosition(tileX, tileY));
+        return isValid(tileX, tileY, TilePosition.SIZE_IN_PIXELS) && gameData.getHasCreep(tileX, tileY);
     }
 
     public boolean hasCreep(final TilePosition position) {
-        if (!position.isValid(this)) {
-            return false;
-        }
-        return gameData.getHasCreep(position.x, position.y);
+        return hasCreep(position.x, position.y);
     }
 
     public boolean hasPowerPrecise(final int x, final int y) {
