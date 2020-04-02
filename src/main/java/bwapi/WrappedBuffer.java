@@ -80,8 +80,8 @@ class WrappedBuffer {
             throw new StringIndexOutOfBoundsException();
         }
         long pos = offset + address;
-        for (int i = 0; i < finalString.length(); i++) {
-            unsafe.putByte(pos, (byte) finalString.charAt(i));
+        for (int i = 0; i < string.length(); i++) {
+            unsafe.putByte(pos, (byte) string.charAt(i));
             pos++;
         }
         unsafe.putByte(pos, (byte) 0);
