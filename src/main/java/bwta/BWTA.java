@@ -43,7 +43,6 @@ public class BWTA {
     }
 
     public static void readMap(final Game game) {
-        System.err.println("WARNING: this BWTA is fake and only translates BWTA calls to their respective BWEM calls. Please use BWEM directly if possible.");
         bwem = new BWEM(game);
     }
 
