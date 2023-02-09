@@ -943,11 +943,15 @@ public final class Game {
      * be false.
      */
     final public boolean isVisible(final int tileX, final int tileY) {
-        return isValidTile(tileX, tileY) && gameData().isVisible(tileX, tileY);
+        return isValidTile(tileX, tileY) && isVisibleUnsafe(tileX, tileY);
     }
 
     final public boolean isVisible(final TilePosition position) {
         return isVisible(position.x, position.y);
+    }
+
+    final public boolean isVisibleUnsafe(final int tileX, final int tileY) {
+        return gameData().isVisible(tileX, tileY);
     }
 
     /**
@@ -961,11 +965,15 @@ public final class Game {
      * @see #isVisible
      */
     final public boolean isExplored(final int tileX, final int tileY) {
-        return isValidTile(tileX, tileY) && gameData().isExplored(tileX, tileY);
+        return isValidTile(tileX, tileY) && isExploredUnsafe(tileX, tileY);
     }
 
     final public boolean isExplored(final TilePosition position) {
         return isExplored(position.x, position.y);
+    }
+
+    final public boolean isExploredUnsafe(final int tileX, final int tileY) {
+        return gameData().isExplored(tileX, tileY);
     }
 
     /**
@@ -976,11 +984,13 @@ public final class Game {
      * @return true if the given tile has creep on it, false if the given tile does not have creep, or if it is concealed by the fog of war.
      */
     final public boolean hasCreep(final int tileX, final int tileY) {
-        return isValidTile(tileX, tileY) && gameData().getHasCreep(tileX, tileY);
+        return isValidTile(tileX, tileY) && hasCreepUnsafe(tileX, tileY);
     }
-
     final public boolean hasCreep(final TilePosition position) {
         return hasCreep(position.x, position.y);
+    }
+    final public boolean hasCreepUnsafe(final int tileX, final int tileY) {
+        return gameData().getHasCreep(tileX, tileY);
     }
 
     final public boolean hasPowerPrecise(final int x, final int y) {
