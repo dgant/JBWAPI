@@ -1,6 +1,5 @@
 package bwapi;
 
-import java.nio.ByteBuffer;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -187,7 +186,6 @@ class BotWrapper {
             try {
                 configuration.log("Bot: Thread started");
                 while (!gameOver) {
-
                     boolean doUnsafeRead = false;
                     configuration.log("Bot: Ready for another frame");
                     performanceMetrics.getBotIdle().startTiming();

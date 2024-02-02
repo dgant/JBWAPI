@@ -105,7 +105,7 @@ class Client {
 
     boolean connect() {
         if (connected) {
-            System.err.println("Already connected");
+            System.err.println("Attempting to connect, but we are already connected.");
             return true;
         }
 
@@ -117,9 +117,13 @@ class Client {
             final Pointer gameTableView = Kernel32.INSTANCE.MapViewOfFile(MappingKernel.INSTANCE
                             .OpenFileMapping(READ_WRITE, false, "Local\\bwapi_shared_memory_game_list"), READ_WRITE,
                     0, 0, GameTable.SIZE);
+            if (gameTableView == null) {
+                System.err.println("Looking for an instance of StarCraft with BWAPI.");
+                return false;
+            }
             gameTableFileHandle = new WrappedBuffer(gameTableView, GameTable.SIZE);
         } catch (Exception e) {
-            System.err.println("Game table mapping not found.");
+            System.err.println("Did not find a StarCraft BWAPI game table mapping.");
             return false;
         }
 
@@ -167,7 +171,7 @@ class Client {
             gameTableFileHandle = null;
             return false;
         }
-        System.out.println("Connected");
+        System.out.println("Connected to StarCraft with BWAPI");
 
         // Expose the raw game data from shared memory via a ByteBuffer
         try {
@@ -197,7 +201,7 @@ class Client {
         }
 
         if (SUPPORTED_BWAPI_VERSION != clientData.gameData().getClient_version()) {
-            System.err.println("Error: Client and Server are not compatible!");
+            System.err.println("Error: BWAPI Client and BWAPI Server have different versions and are not compatible!");
             System.err.println("Client version: " + SUPPORTED_BWAPI_VERSION);
             System.err.println("Server version: " + clientData.gameData().getClient_version());
             disconnect();
@@ -237,7 +241,7 @@ class Client {
             pipeObjectHandle.writeByte(1);
         }
         catch (Exception e) {
-            System.err.println("failed, disconnecting");
+            System.err.println("Sending 'frame done' failed. Will disconnect.");
             if (bwClient.getConfiguration().getDebugConnection()) {
                 e.printStackTrace();
             }
@@ -262,7 +266,7 @@ class Client {
                 // 2 is the "frame ready" signal from BWAPI
                 frameReady = pipeObjectHandle.readByte() == 2;
             } catch (Exception e) {
-                System.err.println("failed, disconnecting");
+                System.err.println("Reading 'frame ready' failed. Will disconnect.");
                 if (bwClient.getConfiguration().getDebugConnection()) {
                     e.printStackTrace();
                 }
