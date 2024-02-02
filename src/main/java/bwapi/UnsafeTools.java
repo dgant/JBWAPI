@@ -10,6 +10,7 @@ class UnsafeTools {
     private static Object getOrCrash(final Class<?> className, final Object object, final String fieldName) {
         try { // get
             final Field field = className.getDeclaredField(fieldName);
+            //noinspection deprecation
             final boolean accessible = field.isAccessible();
             if (!accessible) {
                 field.setAccessible(true);
