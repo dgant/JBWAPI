@@ -7,6 +7,10 @@ public final class TilePosition extends Point<TilePosition> {
     public static final TilePosition None = new TilePosition(32000 / SIZE_IN_PIXELS, 32032 / SIZE_IN_PIXELS);
     public static final TilePosition Unknown = new TilePosition(32000 / SIZE_IN_PIXELS, 32064 / SIZE_IN_PIXELS);
     public static final TilePosition Origin = new TilePosition(0, 0);
+    public static final TilePosition INVALID = Invalid;
+    public static final TilePosition NONE = None;
+    public static final TilePosition UNKNOWN = Unknown;
+    public static final TilePosition ORIGIN = Origin;
 
     public TilePosition(final int x, final int y) {
         super(x, y, SIZE_IN_PIXELS);
@@ -42,6 +46,10 @@ public final class TilePosition extends Point<TilePosition> {
 
     public TilePosition add(final TilePosition other) {
         return new TilePosition(x + other.x, y + other.y);
+    }
+
+    public TilePosition add(final int dx, final int dy) {
+        return new TilePosition(x + dx, y + dy);
     }
 
     public TilePosition divide(final int divisor) {

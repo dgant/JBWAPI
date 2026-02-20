@@ -40,6 +40,10 @@ public class WalkPosition extends Point<WalkPosition> {
         return new WalkPosition(x + other.x, y + other.y);
     }
 
+    public WalkPosition add(final int dx, final int dy) {
+        return new WalkPosition(x + dx, y + dy);
+    }
+
     public WalkPosition divide(final int divisor) {
         return new WalkPosition(x / divisor, y / divisor);
     }

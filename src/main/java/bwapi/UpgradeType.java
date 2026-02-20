@@ -67,6 +67,62 @@ public enum UpgradeType {
     None(61),
     Unknown(62);
 
+    // Legacy proxy compatibility aliases.
+    public static final UpgradeType TERRAN_INFANTRY_ARMOR = Terran_Infantry_Armor;
+    public static final UpgradeType TERRAN_VEHICLE_PLATING = Terran_Vehicle_Plating;
+    public static final UpgradeType TERRAN_SHIP_PLATING = Terran_Ship_Plating;
+    public static final UpgradeType ZERG_CARAPACE = Zerg_Carapace;
+    public static final UpgradeType ZERG_FLYER_CARAPACE = Zerg_Flyer_Carapace;
+    public static final UpgradeType PROTOSS_GROUND_ARMOR = Protoss_Ground_Armor;
+    public static final UpgradeType PROTOSS_AIR_ARMOR = Protoss_Air_Armor;
+    public static final UpgradeType TERRAN_INFANTRY_WEAPONS = Terran_Infantry_Weapons;
+    public static final UpgradeType TERRAN_VEHICLE_WEAPONS = Terran_Vehicle_Weapons;
+    public static final UpgradeType TERRAN_SHIP_WEAPONS = Terran_Ship_Weapons;
+    public static final UpgradeType ZERG_MELEE_ATTACKS = Zerg_Melee_Attacks;
+    public static final UpgradeType ZERG_MISSILE_ATTACKS = Zerg_Missile_Attacks;
+    public static final UpgradeType ZERG_FLYER_ATTACKS = Zerg_Flyer_Attacks;
+    public static final UpgradeType PROTOSS_GROUND_WEAPONS = Protoss_Ground_Weapons;
+    public static final UpgradeType PROTOSS_AIR_WEAPONS = Protoss_Air_Weapons;
+    public static final UpgradeType PROTOSS_PLASMA_SHIELDS = Protoss_Plasma_Shields;
+    public static final UpgradeType U_238_SHELLS = U_238_Shells;
+    public static final UpgradeType ION_THRUSTERS = Ion_Thrusters;
+    public static final UpgradeType TITAN_REACTOR = Titan_Reactor;
+    public static final UpgradeType OCULAR_IMPLANTS = Ocular_Implants;
+    public static final UpgradeType MOEBIUS_REACTOR = Moebius_Reactor;
+    public static final UpgradeType APOLLO_REACTOR = Apollo_Reactor;
+    public static final UpgradeType COLOSSUS_REACTOR = Colossus_Reactor;
+    public static final UpgradeType VENTRAL_SACS = Ventral_Sacs;
+    public static final UpgradeType ANTENNAE = Antennae;
+    public static final UpgradeType PNEUMATIZED_CARAPACE = Pneumatized_Carapace;
+    public static final UpgradeType METABOLIC_BOOST = Metabolic_Boost;
+    public static final UpgradeType ADRENAL_GLANDS = Adrenal_Glands;
+    public static final UpgradeType MUSCULAR_AUGMENTS = Muscular_Augments;
+    public static final UpgradeType GROOVED_SPINES = Grooved_Spines;
+    public static final UpgradeType GAMETE_MEIOSIS = Gamete_Meiosis;
+    public static final UpgradeType METASYNAPTIC_NODE = Metasynaptic_Node;
+    public static final UpgradeType SINGULARITY_CHARGE = Singularity_Charge;
+    public static final UpgradeType LEG_ENHANCEMENTS = Leg_Enhancements;
+    public static final UpgradeType SCARAB_DAMAGE = Scarab_Damage;
+    public static final UpgradeType REAVER_CAPACITY = Reaver_Capacity;
+    public static final UpgradeType GRAVITIC_DRIVE = Gravitic_Drive;
+    public static final UpgradeType SENSOR_ARRAY = Sensor_Array;
+    public static final UpgradeType GRAVITIC_BOOSTERS = Gravitic_Boosters;
+    public static final UpgradeType KHAYDARIN_AMULET = Khaydarin_Amulet;
+    public static final UpgradeType APIAL_SENSORS = Apial_Sensors;
+    public static final UpgradeType GRAVITIC_THRUSTERS = Gravitic_Thrusters;
+    public static final UpgradeType CARRIER_CAPACITY = Carrier_Capacity;
+    public static final UpgradeType KHAYDARIN_CORE = Khaydarin_Core;
+    public static final UpgradeType ARGUS_JEWEL = Argus_Jewel;
+    public static final UpgradeType ARGUS_TALISMAN = Argus_Talisman;
+    public static final UpgradeType CADUCEUS_REACTOR = Caduceus_Reactor;
+    public static final UpgradeType CHITINOUS_PLATING = Chitinous_Plating;
+    public static final UpgradeType ANABOLIC_SYNTHESIS = Anabolic_Synthesis;
+    public static final UpgradeType CHARON_BOOSTERS = Charon_Boosters;
+    public static final UpgradeType UPGRADE_60 = Upgrade_60;
+    public static final UpgradeType NONE = None;
+    public static final UpgradeType UNKNOWN = Unknown;
+
+
     // DEFAULTS
     private static final int[] defaultOreCostBase = {   // same as default gas cost base
             100, 100, 150, 150, 150, 100, 150, 100, 100, 100, 100, 100, 100, 100, 100, 200, 150, 100, 200, 150, 100, 150, 200, 150, 200, 150, 150, 100, 200,
@@ -211,6 +267,27 @@ public enum UpgradeType {
         this.id = id;
     }
 
+    public int getID() {
+        return id;
+    }
+
+    public String getName() {
+        return name();
+    }
+
+    public static List<UpgradeType> allUpgradeTypes() {
+        return Collections.unmodifiableList(Arrays.asList(values()));
+    }
+
+    // Legacy compatibility names.
+    public int mineralPriceBase() {
+        return mineralPriceFactor() == 0 ? mineralPrice() : mineralPrice(1);
+    }
+
+    public int gasPriceBase() {
+        return gasPriceFactor() == 0 ? gasPrice() : gasPrice(1);
+    }
+
     /**
      * Retrieves the race the upgrade is for.
      * For example, UpgradeType.Terran_Infantry_Armor.getRace() will return {@link Race#Terran}.
@@ -335,4 +412,6 @@ public enum UpgradeType {
     public UnitType whatsRequired(final int level) {
         return level >= 1 && level <= 3 ? requirements[level - 1][id] : UnitType.None;
     }
+
+    public static final UpgradeType CHARON_BOOSTER = Charon_Boosters;
 }

@@ -451,6 +451,14 @@ public class Unit implements Comparable<Unit> {
         return Position.Origin.getApproxDistance(new Position(xDist, yDist));
     }
 
+    // Legacy proxy compatibility alias.
+    public int getCenterDistance(final Unit target) {
+        if (target == null) {
+            return Integer.MAX_VALUE;
+        }
+        return getPosition().getApproxDistance(target.getPosition());
+    }
+
     /**
      * Using data provided by Starcraft, checks if there is a path available from this
      * unit to the given target.
@@ -552,6 +560,20 @@ public class Unit implements Comparable<Unit> {
      */
     public TilePosition getInitialTilePosition() {
         return initialTilePosition;
+    }
+
+    // Legacy proxy compatibility: historical code queried a synthetic "previous unit data" object.
+    // JBWAPI exposes last-known state through this Unit object, so return this.
+    public Unit getPreviousUnitData() {
+        return this;
+    }
+
+    public Position getLastKnownPosition() {
+        return getPosition();
+    }
+
+    public boolean wasCompleted() {
+        return isCompleted();
     }
 
     /**
@@ -989,6 +1011,11 @@ public class Unit implements Comparable<Unit> {
             return game.getUnit(self().buildUnit.get());
         }
         return game.getUnit(unitData.getBuildUnit());
+    }
+
+    // Legacy proxy compatibility alias.
+    public Unit getChild() {
+        return getBuildUnit();
     }
 
     /**
@@ -1913,6 +1940,18 @@ public class Unit implements Comparable<Unit> {
         return t == Terran_Siege_Tank_Siege_Mode || t == Hero_Edmund_Duke_Siege_Mode;
     }
 
+    // Legacy proxy compatibility alias.
+    public boolean isUnsieged() {
+        return !isSieged();
+    }
+
+    // Legacy proxy compatibility no-ops. BWAPI 4.4 no longer exposes these hints.
+    public void setAttackPriority(int priority) {
+    }
+
+    public void setMovePriority(int priority) {
+    }
+
     /**
      * Checks if the unit is starting to attack.
      *
@@ -2029,6 +2068,28 @@ public class Unit implements Comparable<Unit> {
      */
     public boolean isPowered() {
         return unitData.isPowered();
+    }
+
+    public boolean isUnpowered() {
+        return !isPowered();
+    }
+
+    public int getGroundWeaponDamage() {
+        final WeaponType wpn = getType().groundWeapon();
+        return wpn == null ? 0 : getPlayer().damage(wpn);
+    }
+
+    public int getAirWeaponDamage() {
+        final WeaponType wpn = getType().airWeapon();
+        return wpn == null ? 0 : getPlayer().damage(wpn);
+    }
+
+    public int getArmor() {
+        return getPlayer().armor(getType());
+    }
+
+    public int getShieldUpgradeLevel() {
+        return getPlayer().getUpgradeLevel(UpgradeType.Protoss_Plasma_Shields);
     }
 
     /**
@@ -2150,6 +2211,15 @@ public class Unit implements Comparable<Unit> {
         return issueCommand(UnitCommand.attack(this, target));
     }
 
+    // Legacy proxy compatibility aliases.
+    public boolean attackMove(final Position target) {
+        return attack(target);
+    }
+
+    public boolean attackUnit(final Unit target) {
+        return attack(target);
+    }
+
     /**
      * Orders the unit(s) to attack move to the specified position.
      *
@@ -2193,6 +2263,11 @@ public class Unit implements Comparable<Unit> {
      */
     public boolean build(final UnitType type, final TilePosition target) {
         return issueCommand(UnitCommand.build(this, target, type));
+    }
+
+    // Legacy proxy compatibility overload.
+    public boolean build(final TilePosition target, final UnitType type) {
+        return build(type, target);
     }
 
     /**
@@ -2312,6 +2387,15 @@ public class Unit implements Comparable<Unit> {
 
     public boolean setRallyPoint(final Unit target) {
         return issueCommand(UnitCommand.setRallyPoint(this, target));
+    }
+
+    // Legacy proxy compatibility aliases.
+    public boolean setRallyPosition(final Position target) {
+        return setRallyPoint(target);
+    }
+
+    public boolean setRallyUnit(final Unit target) {
+        return setRallyPoint(target);
     }
 
     public boolean move(final Position target) {

@@ -22,6 +22,7 @@ class BotWrapper {
     void startNewGame(WrappedBuffer liveData, PerformanceMetrics performanceMetrics) {
         this.performanceMetrics = performanceMetrics;
         botGame = new Game();
+        Game.setInstance(botGame);
         botGame.setConfiguration(configuration);
         botGame.botClientData().setBuffer(liveData);
         gameOver = false;
@@ -44,7 +45,9 @@ class BotWrapper {
         configuration.log("Main: onFrame synchronous end");
     }
 
-    void endGame() { }
+    void endGame() {
+        Game.setInstance(null);
+    }
 
     protected void handleEvents() {
         ClientData.GameData botGameData = botGame.botClientData().gameData();

@@ -21,9 +21,21 @@ public enum UnitSizeType {
     None(4),
     Unknown(5);
 
+    // Legacy proxy compatibility aliases.
+    public static final UnitSizeType INDEPENDENT = Independent;
+    public static final UnitSizeType SMALL = Small;
+    public static final UnitSizeType MEDIUM = Medium;
+    public static final UnitSizeType LARGE = Large;
+    public static final UnitSizeType NONE = None;
+    public static final UnitSizeType UNKNOWN = Unknown;
+
     public final int id;
 
     UnitSizeType(final int id) {
         this.id = id;
+    }
+
+    public int getID() {
+        return id;
     }
 }

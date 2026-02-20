@@ -17,7 +17,17 @@ public abstract class Point<T extends Point<T>> implements Comparable<Point<T>> 
         return x;
     }
 
+    // Legacy BWAPI/proxy compatibility.
+    public int x() {
+        return x;
+    }
+
     public int getY() {
+        return y;
+    }
+
+    // Legacy BWAPI/proxy compatibility.
+    public int y() {
         return y;
     }
 

@@ -24,6 +24,15 @@ public enum DamageType {
     None(5),
     Unknown(6);
 
+    // Legacy proxy compatibility aliases.
+    public static final DamageType INDEPENDENT = Independent;
+    public static final DamageType EXPLOSIVE = Explosive;
+    public static final DamageType CONCUSSIVE = Concussive;
+    public static final DamageType NORMAL = Normal;
+    public static final DamageType IGNORE_ARMOR = Ignore_Armor;
+    public static final DamageType NONE = None;
+
+
     public final int id;
 
     DamageType(final int id) {

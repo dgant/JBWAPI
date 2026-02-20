@@ -60,6 +60,20 @@ public final class Color {
      */
     public final static Color Grey = new Color(74);
 
+    // Legacy compatibility aliases.
+    public final static Color RED = Red;
+    public final static Color BLUE = Blue;
+    public final static Color TEAL = Teal;
+    public final static Color PURPLE = Purple;
+    public final static Color ORANGE = Orange;
+    public final static Color BROWN = Brown;
+    public final static Color WHITE = White;
+    public final static Color YELLOW = Yellow;
+    public final static Color GREEN = Green;
+    public final static Color CYAN = Cyan;
+    public final static Color BLACK = Black;
+    public final static Color GREY = Grey;
+
     private static Map<Integer, String> defaultColors = null;
 
     private static final RGBQUAD RGBRESERVE = new RGBQUAD(0, 0, 0, 0xFF);

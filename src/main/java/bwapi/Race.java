@@ -2,6 +2,8 @@ package bwapi;
 
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static bwapi.UnitType.*;
 
@@ -25,6 +27,17 @@ public enum Race {
     Random(6),
     None(7),
     Unknown(8);
+
+    // Legacy compatibility aliases.
+    public static final Race ZERG = Zerg;
+    public static final Race TERRAN = Terran;
+    public static final Race PROTOSS = Protoss;
+    public static final Race OTHER = Other;
+    public static final Race UNUSED = Unused;
+    public static final Race SELECT = Select;
+    public static final Race RANDOM = Random;
+    public static final Race NONE = None;
+    public static final Race UNKNOWN = Unknown;
 
     static final UnitType[] workerTypes = {
             Zerg_Drone, Terran_SCV, Protoss_Probe,
@@ -62,6 +75,19 @@ public enum Race {
 
     Race(final int id) {
         this.id = id;
+    }
+
+    // Legacy proxy compatibility alias.
+    public int getID() {
+        return id;
+    }
+
+    public String getName() {
+        return name();
+    }
+
+    public static List<Race> allRaces() {
+        return Collections.unmodifiableList(Arrays.asList(values()));
     }
 
     /**

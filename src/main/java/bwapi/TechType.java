@@ -54,6 +54,47 @@ public enum TechType {
     Nuclear_Strike(45),
     Unknown(46);
 
+    // Legacy proxy compatibility aliases.
+    public static final TechType STIM_PACKS = Stim_Packs;
+    public static final TechType LOCKDOWN = Lockdown;
+    public static final TechType EMP_SHOCKWAVE = EMP_Shockwave;
+    public static final TechType SPIDER_MINES = Spider_Mines;
+    public static final TechType SCANNER_SWEEP = Scanner_Sweep;
+    public static final TechType TANK_SIEGE_MODE = Tank_Siege_Mode;
+    public static final TechType DEFENSIVE_MATRIX = Defensive_Matrix;
+    public static final TechType IRRADIATE = Irradiate;
+    public static final TechType YAMATO_GUN = Yamato_Gun;
+    public static final TechType CLOAKING_FIELD = Cloaking_Field;
+    public static final TechType PERSONNEL_CLOAKING = Personnel_Cloaking;
+    public static final TechType BURROWING = Burrowing;
+    public static final TechType INFESTATION = Infestation;
+    public static final TechType SPAWN_BROODLINGS = Spawn_Broodlings;
+    public static final TechType DARK_SWARM = Dark_Swarm;
+    public static final TechType PLAGUE = Plague;
+    public static final TechType CONSUME = Consume;
+    public static final TechType ENSNARE = Ensnare;
+    public static final TechType PARASITE = Parasite;
+    public static final TechType PSIONIC_STORM = Psionic_Storm;
+    public static final TechType HALLUCINATION = Hallucination;
+    public static final TechType RECALL = Recall;
+    public static final TechType STASIS_FIELD = Stasis_Field;
+    public static final TechType ARCHON_WARP = Archon_Warp;
+    public static final TechType RESTORATION = Restoration;
+    public static final TechType DISRUPTION_WEB = Disruption_Web;
+    public static final TechType UNUSED_26 = Unused_26;
+    public static final TechType MIND_CONTROL = Mind_Control;
+    public static final TechType DARK_ARCHON_MELD = Dark_Archon_Meld;
+    public static final TechType FEEDBACK = Feedback;
+    public static final TechType OPTICAL_FLARE = Optical_Flare;
+    public static final TechType MAELSTROM = Maelstrom;
+    public static final TechType LURKER_ASPECT = Lurker_Aspect;
+    public static final TechType UNUSED_33 = Unused_33;
+    public static final TechType HEALING = Healing;
+    public static final TechType NONE = None;
+    public static final TechType NUCLEAR_STRIKE = Nuclear_Strike;
+    public static final TechType UNKNOWN = Unknown;
+
+
     /// IMPLEMENTATION
     private static final int[] defaultOreCost =         // Same as default gas cost
             {100, 200, 200, 100, 0, 150, 0, 200, 100, 150, 100, 100, 0, 100, 0, 200, 100, 100, 0, 200, 150, 150, 150, 0,
@@ -195,6 +236,18 @@ public enum TechType {
 
     TechType(final int id) {
         this.id = id;
+    }
+
+    public int getID() {
+        return id;
+    }
+
+    public String getName() {
+        return name();
+    }
+
+    public static List<TechType> allTechTypes() {
+        return Collections.unmodifiableList(Arrays.asList(values()));
     }
 
     /**

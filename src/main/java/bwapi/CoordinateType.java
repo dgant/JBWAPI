@@ -23,6 +23,12 @@ public enum CoordinateType {
      */
     Mouse(3);
 
+    // Legacy proxy compatibility aliases.
+    public static final CoordinateType NONE = None;
+    public static final CoordinateType SCREEN = Screen;
+    public static final CoordinateType MAP = Map;
+    public static final CoordinateType MOUSE = Mouse;
+
     static final CoordinateType[] idToEnum = new CoordinateType[4];
 
     static {

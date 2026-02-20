@@ -47,6 +47,10 @@ public final class Bullet implements Comparable<Bullet> {
         return bulletData.getId();
     }
 
+    public int getId() {
+        return getID();
+    }
+
     /**
      * Checks if the {@link Bullet} exists in the view of the BWAPI player.
      * <p>

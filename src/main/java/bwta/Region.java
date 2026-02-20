@@ -9,10 +9,12 @@ import java.util.stream.Collectors;
 public class Region {
     private final Area area;
     private final Position center;
+    private final RegionPolygon polygon;
 
     Region(final Area area) {
         this.area = area;
         this.center = area.getWalkPositionWithHighestAltitude().toPosition();
+        this.polygon = new RegionPolygon(area.getTopLeft(), area.getBottomRight());
     }
 
     public Position getCenter() {
@@ -39,6 +41,11 @@ public class Region {
         return area.getAccessibleNeighbors().stream()
                 .map(a -> BWTA.regionMap.get(a))
                 .collect(Collectors.toList());
+    }
+
+    // Legacy proxy compatibility adapter.
+    public RegionPolygon getPolygon() {
+        return polygon;
     }
 
     @Override

@@ -16,6 +16,10 @@ public enum Flag {
      */
     UserInput(1);
 
+    // Legacy compatibility aliases.
+    public static final Flag USER_INPUT = UserInput;
+    public static final Flag COMPLETE_MAP_INFORMATION = CompleteMapInformation;
+
     public final int id;
 
     Flag(final int id) {

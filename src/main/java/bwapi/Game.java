@@ -17,6 +17,7 @@ import static bwapi.UnitType.*;
  * resources, players, forces, bullets, terrain, fog of war, regions, etc.
  */
 public final class Game {
+    private static volatile Game instance;
     private static final int[][] damageRatio = {
             // Ind, Sml, Med, Lrg, Non, Unk
             {0, 0, 0, 0, 0, 0}, // Independent
@@ -107,6 +108,14 @@ public final class Game {
 
     Game() {
         clientData = new ClientData();
+    }
+
+    static void setInstance(Game game) {
+        instance = game;
+    }
+
+    public static Game getInstance() {
+        return instance;
     }
 
     void setConfiguration(BWClientConfiguration configuration) {
@@ -803,6 +812,10 @@ public final class Game {
         return mapWidth;
     }
 
+    public int getMapWidth() {
+        return mapWidth();
+    }
+
     /**
      * Retrieves the height of the map in build tile units.
      *
@@ -810,6 +823,10 @@ public final class Game {
      */
     public int mapHeight() {
         return mapHeight;
+    }
+
+    public int getMapHeight() {
+        return mapHeight();
     }
 
     int mapPixelWidth() {
@@ -851,6 +868,39 @@ public final class Game {
      */
     public String mapName() {
         return mapName;
+    }
+
+    // Legacy proxy compatibility aliases.
+    public String getMapName() {
+        return mapName();
+    }
+
+    public String getMapFileName() {
+        return mapFileName();
+    }
+
+    public int getScreenX() {
+        return getScreenPosition().x;
+    }
+
+    public int getScreenY() {
+        return getScreenPosition().y;
+    }
+
+    public int getMouseX() {
+        return getMousePosition().x;
+    }
+
+    public int getMouseY() {
+        return getMousePosition().y;
+    }
+
+    public List<Bullet> getAllBullets() {
+        return getBullets();
+    }
+
+    public void setDrawing(boolean enabled) {
+        setGUI(enabled);
     }
 
     /**
@@ -1329,6 +1379,11 @@ public final class Game {
                 (builder.getAddon() != null && builder.getAddon().getType() == addon);
     }
 
+    // Legacy proxy compatibility overload.
+    final public boolean canMake(final Unit builder, final UnitType type) {
+        return canMake(type, builder);
+    }
+
     final public boolean canResearch(final TechType type, final Unit unit) {
         return canResearch(type, unit, true);
     }
@@ -1394,6 +1449,11 @@ public final class Game {
     }
 
     final public boolean canUpgrade(final UpgradeType type, final Unit unit) {
+        return canUpgrade(type, unit, true);
+    }
+
+    // Legacy proxy compatibility overload.
+    final public boolean canUpgrade(final Unit unit, final UpgradeType type) {
         return canUpgrade(type, unit, true);
     }
 

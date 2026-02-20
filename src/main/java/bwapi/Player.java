@@ -715,6 +715,11 @@ public class Player implements Comparable<Player> {
         return dmg;
     }
 
+    // Legacy proxy compatibility alias.
+    public int getWeaponDamage(final WeaponType wpn) {
+        return damage(wpn);
+    }
+
     /**
      * Retrieves the total unit score, as seen in the end-game score screen.
      *

@@ -8,6 +8,10 @@ public final class Position extends Point<Position> {
     public static final Position None = new Position(32000 / SIZE_IN_PIXELS, 32032 / SIZE_IN_PIXELS);
     public static final Position Unknown = new Position(32000 / SIZE_IN_PIXELS, 32064 / SIZE_IN_PIXELS);
     public static final Position Origin = new Position(0, 0);
+    public static final Position INVALID = Invalid;
+    public static final Position NONE = None;
+    public static final Position UNKNOWN = Unknown;
+    public static final Position ORIGIN = Origin;
 
     public Position(final int x, final int y) {
         super(x, y, SIZE_IN_PIXELS);
@@ -43,6 +47,10 @@ public final class Position extends Point<Position> {
 
     public Position add(final Position other) {
         return new Position(x + other.x, y + other.y);
+    }
+
+    public Position add(final int dx, final int dy) {
+        return new Position(x + dx, y + dy);
     }
 
     public Position divide(final int divisor) {

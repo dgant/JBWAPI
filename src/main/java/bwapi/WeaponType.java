@@ -122,6 +122,112 @@ public enum WeaponType {
     None(130),
     Unknown(131);
 
+    // Legacy proxy compatibility aliases.
+    public static final WeaponType NONE = None;
+    public static final WeaponType UNKNOWN = Unknown;
+
+    public static final WeaponType GAUSS_RIFLE = Gauss_Rifle;
+    public static final WeaponType GAUSS_RIFLE_JIM_RAYNOR = Gauss_Rifle_Jim_Raynor;
+    public static final WeaponType C_10_CANISTER_RIFLE = C_10_Canister_Rifle;
+    public static final WeaponType C_10_CANISTER_RIFLE_SARAH_KERRIGAN = C_10_Canister_Rifle_Sarah_Kerrigan;
+    public static final WeaponType FRAGMENTATION_GRENADE = Fragmentation_Grenade;
+    public static final WeaponType FRAGMENTATION_GRENADE_JIM_RAYNOR = Fragmentation_Grenade_Jim_Raynor;
+    public static final WeaponType SPIDER_MINES = Spider_Mines;
+    public static final WeaponType TWIN_AUTOCANNONS = Twin_Autocannons;
+    public static final WeaponType HELLFIRE_MISSILE_PACK = Hellfire_Missile_Pack;
+    public static final WeaponType TWIN_AUTOCANNONS_ALAN_SCHEZAR = Twin_Autocannons_Alan_Schezar;
+    public static final WeaponType HELLFIRE_MISSILE_PACK_ALAN_SCHEZAR = Hellfire_Missile_Pack_Alan_Schezar;
+    public static final WeaponType ARCLITE_CANNON = Arclite_Cannon;
+    public static final WeaponType ARCLITE_CANNON_EDMUND_DUKE = Arclite_Cannon_Edmund_Duke;
+    public static final WeaponType FUSION_CUTTER = Fusion_Cutter;
+    public static final WeaponType GEMINI_MISSILES = Gemini_Missiles;
+    public static final WeaponType BURST_LASERS = Burst_Lasers;
+    public static final WeaponType GEMINI_MISSILES_TOM_KAZANSKY = Gemini_Missiles_Tom_Kazansky;
+    public static final WeaponType BURST_LASERS_TOM_KAZANSKY = Burst_Lasers_Tom_Kazansky;
+    public static final WeaponType ATS_LASER_BATTERY = ATS_Laser_Battery;
+    public static final WeaponType ATA_LASER_BATTERY = ATA_Laser_Battery;
+    public static final WeaponType ATS_LASER_BATTERY_HERO = ATS_Laser_Battery_Hero;
+    public static final WeaponType ATA_LASER_BATTERY_HERO = ATA_Laser_Battery_Hero;
+    public static final WeaponType ATS_LASER_BATTERY_HYPERION = ATS_Laser_Battery_Hyperion;
+    public static final WeaponType ATA_LASER_BATTERY_HYPERION = ATA_Laser_Battery_Hyperion;
+    public static final WeaponType FLAME_THROWER = Flame_Thrower;
+    public static final WeaponType FLAME_THROWER_GUI_MONTAG = Flame_Thrower_Gui_Montag;
+    public static final WeaponType ARCLITE_SHOCK_CANNON = Arclite_Shock_Cannon;
+    public static final WeaponType ARCLITE_SHOCK_CANNON_EDMUND_DUKE = Arclite_Shock_Cannon_Edmund_Duke;
+    public static final WeaponType LONGBOLT_MISSILE = Longbolt_Missile;
+    public static final WeaponType YAMATO_GUN = Yamato_Gun;
+    public static final WeaponType NUCLEAR_STRIKE = Nuclear_Strike;
+    public static final WeaponType LOCKDOWN = Lockdown;
+    public static final WeaponType EMP_SHOCKWAVE = EMP_Shockwave;
+    public static final WeaponType IRRADIATE = Irradiate;
+    public static final WeaponType CLAWS = Claws;
+    public static final WeaponType CLAWS_DEVOURING_ONE = Claws_Devouring_One;
+    public static final WeaponType CLAWS_INFESTED_KERRIGAN = Claws_Infested_Kerrigan;
+    public static final WeaponType NEEDLE_SPINES = Needle_Spines;
+    public static final WeaponType NEEDLE_SPINES_HUNTER_KILLER = Needle_Spines_Hunter_Killer;
+    public static final WeaponType KAISER_BLADES = Kaiser_Blades;
+    public static final WeaponType KAISER_BLADES_TORRASQUE = Kaiser_Blades_Torrasque;
+    public static final WeaponType TOXIC_SPORES = Toxic_Spores;
+    public static final WeaponType SPINES = Spines;
+    public static final WeaponType ACID_SPORE = Acid_Spore;
+    public static final WeaponType ACID_SPORE_KUKULZA = Acid_Spore_Kukulza;
+    public static final WeaponType GLAVE_WURM = Glave_Wurm;
+    public static final WeaponType GLAVE_WURM_KUKULZA = Glave_Wurm_Kukulza;
+    public static final WeaponType SEEKER_SPORES = Seeker_Spores;
+    public static final WeaponType SUBTERRANEAN_TENTACLE = Subterranean_Tentacle;
+    public static final WeaponType SUICIDE_INFESTED_TERRAN = Suicide_Infested_Terran;
+    public static final WeaponType SUICIDE_SCOURGE = Suicide_Scourge;
+    public static final WeaponType PARASITE = Parasite;
+    public static final WeaponType SPAWN_BROODLINGS = Spawn_Broodlings;
+    public static final WeaponType ENSNARE = Ensnare;
+    public static final WeaponType DARK_SWARM = Dark_Swarm;
+    public static final WeaponType PLAGUE = Plague;
+    public static final WeaponType CONSUME = Consume;
+    public static final WeaponType PARTICLE_BEAM = Particle_Beam;
+    public static final WeaponType PSI_BLADES = Psi_Blades;
+    public static final WeaponType PSI_BLADES_FENIX = Psi_Blades_Fenix;
+    public static final WeaponType PHASE_DISRUPTOR = Phase_Disruptor;
+    public static final WeaponType PHASE_DISRUPTOR_FENIX = Phase_Disruptor_Fenix;
+    public static final WeaponType PSI_ASSAULT = Psi_Assault;
+    public static final WeaponType PSIONIC_SHOCKWAVE = Psionic_Shockwave;
+    public static final WeaponType PSIONIC_SHOCKWAVE_TZ_ARCHON = Psionic_Shockwave_TZ_Archon;
+    public static final WeaponType DUAL_PHOTON_BLASTERS = Dual_Photon_Blasters;
+    public static final WeaponType ANTI_MATTER_MISSILES = Anti_Matter_Missiles;
+    public static final WeaponType DUAL_PHOTON_BLASTERS_MOJO = Dual_Photon_Blasters_Mojo;
+    public static final WeaponType ANTI_MATTER_MISSILES_MOJO = Anti_Matter_Missiles_Mojo;
+    public static final WeaponType PHASE_DISRUPTOR_CANNON = Phase_Disruptor_Cannon;
+    public static final WeaponType PHASE_DISRUPTOR_CANNON_DANIMOTH = Phase_Disruptor_Cannon_Danimoth;
+    public static final WeaponType PULSE_CANNON = Pulse_Cannon;
+    public static final WeaponType STS_PHOTON_CANNON = STS_Photon_Cannon;
+    public static final WeaponType STA_PHOTON_CANNON = STA_Photon_Cannon;
+    public static final WeaponType SCARAB = Scarab;
+    public static final WeaponType STASIS_FIELD = Stasis_Field;
+    public static final WeaponType PSIONIC_STORM = Psionic_Storm;
+    public static final WeaponType WARP_BLADES_ZERATUL = Warp_Blades_Zeratul;
+    public static final WeaponType WARP_BLADES_HERO = Warp_Blades_Hero;
+    public static final WeaponType PLATFORM_LASER_BATTERY = Platform_Laser_Battery;
+    public static final WeaponType INDEPENDANT_LASER_BATTERY = Independant_Laser_Battery;
+    public static final WeaponType TWIN_AUTOCANNONS_FLOOR_TRAP = Twin_Autocannons_Floor_Trap;
+    public static final WeaponType HELLFIRE_MISSILE_PACK_WALL_TRAP = Hellfire_Missile_Pack_Wall_Trap;
+    public static final WeaponType FLAME_THROWER_WALL_TRAP = Flame_Thrower_Wall_Trap;
+    public static final WeaponType HELLFIRE_MISSILE_PACK_FLOOR_TRAP = Hellfire_Missile_Pack_Floor_Trap;
+    public static final WeaponType NEUTRON_FLARE = Neutron_Flare;
+    public static final WeaponType DISRUPTION_WEB = Disruption_Web;
+    public static final WeaponType RESTORATION = Restoration;
+    public static final WeaponType HALO_ROCKETS = Halo_Rockets;
+    public static final WeaponType CORROSIVE_ACID = Corrosive_Acid;
+    public static final WeaponType MIND_CONTROL = Mind_Control;
+    public static final WeaponType FEEDBACK = Feedback;
+    public static final WeaponType OPTICAL_FLARE = Optical_Flare;
+    public static final WeaponType MAELSTROM = Maelstrom;
+    public static final WeaponType SUBTERRANEAN_SPINES = Subterranean_Spines;
+    public static final WeaponType WARP_BLADES = Warp_Blades;
+    public static final WeaponType C_10_CANISTER_RIFLE_SAMIR_DURAN = C_10_Canister_Rifle_Samir_Duran;
+    public static final WeaponType C_10_CANISTER_RIFLE_INFESTED_DURAN = C_10_Canister_Rifle_Infested_Duran;
+    public static final WeaponType DUAL_PHOTON_BLASTERS_ARTANIS = Dual_Photon_Blasters_Artanis;
+    public static final WeaponType ANTI_MATTER_MISSILES_ARTANIS = Anti_Matter_Missiles_Artanis;
+    public static final WeaponType C_10_CANISTER_RIFLE_ALEXEI_STUKOV = C_10_Canister_Rifle_Alexei_Stukov;
+
     private static final int[] defaultWpnDamageAmt = {
             6, 18, 10, 30, 20, 30, 125, 12, 10, 24, 20, 30, 70, 5, 0, 20, 8, 40, 16, 25, 25, 50, 50, 30, 30, 8, 16, 70,
             150, 20, 260, 600, 0, 0, 250, 5, 10, 50, 10, 20, 20, 50, 4, 5, 0, 30, 20, 40, 9, 18, 5, 10, 15, 40, 500, 110,
@@ -408,6 +514,14 @@ public enum WeaponType {
 
     WeaponType(final int id) {
         this.id = id;
+    }
+
+    public int getID() {
+        return id;
+    }
+
+    public String getName() {
+        return name();
     }
 
     /**
