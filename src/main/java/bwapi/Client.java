@@ -109,7 +109,7 @@ class Client {
             return true;
         }
 
-        int serverProcID = -1;
+        int serverProcID = Integer.getInteger("bwapi.serverProcessId", -1);
         int gameTableIndex = -1;
 
         // Expose the BWAPI list of games from shared memory via a ByteBuffer
@@ -142,7 +142,7 @@ class Client {
         for (int i = 0; i < GameTable.MAX_GAME_INSTANCES; i++) {
             GameInstance gameInstance = gameTable.gameInstances[i];
             System.out.println(i + " | " + gameInstance.serverProcessID + " | " + (gameInstance.isConnected ? 1 : 0) + " | " + gameInstance.lastKeepAliveTime);
-            if (gameInstance.serverProcessID != 0 && !gameInstance.isConnected) {
+            if (serverProcID <= 0 && gameInstance.serverProcessID != 0 && !gameInstance.isConnected) {
                 if (gameTableIndex == -1 || latest == 0 || gameInstance.lastKeepAliveTime < latest) {
                     latest = gameInstance.lastKeepAliveTime;
                     gameTableIndex = i;
@@ -150,7 +150,7 @@ class Client {
             }
         }
 
-        if (gameTableIndex != -1) {
+        if (serverProcID <= 0 && gameTableIndex != -1) {
             serverProcID = gameTable.gameInstances[gameTableIndex].serverProcessID;
         }
 
