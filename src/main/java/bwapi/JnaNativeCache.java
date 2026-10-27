@@ -139,11 +139,13 @@ final class JnaNativeCache {
         }
     }
 
-    private static void createDirectory(Path directory, FileAttribute<?>... attributes) throws IOException {
+    private static boolean createDirectory(Path directory, FileAttribute<?>... attributes) throws IOException {
         try {
             Files.createDirectory(directory, attributes);
+            return true;
         } catch (FileAlreadyExistsException exists) {
             if (!Files.isDirectory(directory, NOFOLLOW_LINKS)) throw exists;
+            return false;
         }
     }
 
@@ -162,12 +164,15 @@ final class JnaNativeCache {
             List<AclEntry> acl = Collections.singletonList(AclEntry.newBuilder().setType(AclEntryType.ALLOW)
                     .setPrincipal(user).setPermissions(EnumSet.allOf(AclEntryPermission.class))
                     .setFlags(AclEntryFlag.FILE_INHERIT, AclEntryFlag.DIRECTORY_INHERIT).build());
-            createDirectory(directory, new FileAttribute<List<AclEntry>>() {
+            boolean created = createDirectory(directory, new FileAttribute<List<AclEntry>>() {
                 public String name() { return "acl:acl"; }
                 public List<AclEntry> value() { return acl; }
             });
             AclFileAttributeView attributes = Files.getFileAttributeView(directory, AclFileAttributeView.class, NOFOLLOW_LINKS);
-            if (attributes == null || !attributes.getOwner().equals(user)) throw new IOException("Native cache owner mismatch");
+            if (attributes == null) throw new IOException("Native cache has no ACL support");
+            // Elevated Windows processes can otherwise create directories owned by Administrators.
+            if (created) attributes.setOwner(user);
+            if (!attributes.getOwner().equals(user)) throw new IOException("Native cache owner mismatch");
             for (AclEntry entry : attributes.getAcl()) {
                 if (entry.type() == AclEntryType.ALLOW && !entry.principal().equals(user)) {
                     throw new IOException("Native cache is not private");

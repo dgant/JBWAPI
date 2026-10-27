@@ -76,7 +76,7 @@
                 <version>2.22.2</version>
                 <configuration>
                     <rerunFailingTestsCount>10</rerunFailingTestsCount>
-                    <argLine>-Xms1g -Xmx1g</argLine>
+                    <argLine>-Xms768m -Xmx768m</argLine>
                 </configuration>
             </plugin>
             <plugin>
