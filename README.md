@@ -82,15 +82,19 @@ JBWAPI connects to BWAPI before initializing performance metrics or allocating
 asynchronous frame buffers. This reduces work before connection readiness on all
 supported platforms. No launch configuration changes are needed for these improvements.
 
-A single bot JAR can still include JBWAPI and its dependencies for use on supported
-platforms. JNA selects and extracts the matching native library at runtime; the
-optional Windows packaging below avoids that extraction.
+A single bot JAR can include JBWAPI and its dependencies for use on supported
+platforms. Before JNA initializes, JBWAPI caches its matching native library in a
+private directory under `jna.tmpdir` (or `java.io.tmpdir`) and verifies it against
+the bundled binary before reuse. Cache failures fall back to JNA's normal loading.
+Existing JNA loading settings take precedence, and an already initialized JNA is
+left alone. Set `-Djbwapi.nativeCache=false` to disable this optimization. Cached
+files can be deleted when bots are not running; they will be recreated as needed.
 
 #### Optional Windows native libraries
 
-On Windows, bots can also ship JNA's native DLL alongside their JAR to reduce the time
-before the first connection attempt. This avoids extracting a temporary DLL on every
-JVM launch, including Java 8's first-use `SecureRandom` initialization for temporary filenames.
+On Windows, bots can also ship JNA's native DLL alongside their JAR to avoid both
+initial cache extraction and cache verification on subsequent launches. JNA loads
+the supplied DLL directly when `jna.boot.library.path` is configured.
 
 `mvn package` produces `target/jbwapi-2.2.0-windows-natives.zip` in addition to the
 existing JARs. The ZIP contains the Windows x86 and x86-64 `jnidispatch.dll` files
