@@ -80,7 +80,7 @@ project.
 
 JBWAPI connects to BWAPI before initializing performance metrics or allocating
 asynchronous frame buffers. This reduces work before connection readiness on all
-supported platforms.
+supported platforms. No launch configuration changes are needed for these improvements.
 
 #### Optional Windows native libraries
 
