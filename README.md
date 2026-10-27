@@ -114,9 +114,7 @@ JBWAPI selects the appropriate one automatically. Include the JNA license files
 as well. Extract DLLs from the JNA dependency actually used in that bot so they
 always match, including when overriding JBWAPI's JNA dependency.
 
-The separate `target/jbwapi-2.2.0-windows-natives.zip` remains available as a
-packaging convenience; extract it into the bot's `natives/` directory. It is not a
-separate runtime edition of JBWAPI. For a Windows packaging check, add
+For a Windows packaging check, add
 `-Djna.nounpack=true`: the bundled DLL must load without runtime extraction.
 An explicit `jna.boot.library.path` remains available for custom deployments.
 
