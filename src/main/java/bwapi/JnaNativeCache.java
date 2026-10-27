@@ -25,13 +25,24 @@ import java.util.List;
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.StandardOpenOption.*;
 
-/** Loads a bundled or cached copy of JNA's native binary before ordinary extraction. */
+/**
+ * Prepares JNA's native bridge before the first BWAPI connection attempt.
+ * JNA needs this platform-specific library to access shared memory; extracting it
+ * from the JAR on every launch adds work before the client can connect to a server.
+ *
+ * <p>On Windows, first checks the DLL in {@code natives/} beside the containing JAR
+ * against the embedded library for the running JVM's architecture. Otherwise,
+ * reuses or creates a verified copy in a private, per-user temporary cache.
+ * Unavailable bundles or caches leave JNA's ordinary loading path available.
+ * Explicit JNA loading settings and an already initialized JNA take precedence.
+ */
 final class JnaNativeCache {
     private static final String BOOT_PATH = "jna.boot.library.path";
 
     private JnaNativeCache() {
     }
 
+    /** Call before constructing a platform connector or otherwise initializing JNA. */
     static synchronized void initialize() {
         String path;
         try {
@@ -97,11 +108,18 @@ final class JnaNativeCache {
         }
     }
 
+    // The hash keeps usernames out of paths; ownership and permissions are checked separately.
     static String directoryName() {
         return "jbwapi-jna-" + Integer.toHexString(System.getProperty("user.name").hashCode());
     }
 
-    /** Returns null when another process is publishing this binary; callers can use JNA's fallback. */
+    /**
+     * Returns a verified library at {@code root/<SHA-256 of binary>/name}.
+     * Content-based directories separate JNA versions and platform binaries. A process
+     * lock and atomic move prevent readers from seeing partially written libraries.
+     * Returns null if another writer holds the lock, allowing startup to fall back
+     * immediately. An unsafe or inaccessible cache throws IOException to the caller.
+     */
     static Path cache(Path root, String name, byte[] binary) throws IOException, NoSuchAlgorithmException {
         privateDirectory(root);
         String hash = new BigInteger(1, MessageDigest.getInstance("SHA-256").digest(binary)).toString(16);
@@ -149,7 +167,12 @@ final class JnaNativeCache {
         }
     }
 
-    /** Never load executable code from a cache writable by other users. */
+    /**
+     * Creates or validates a cache root accessible only to its owning user.
+     * On POSIX, this parent directory protects all descendants from other users;
+     * on Windows, descendants also inherit its user-only ACL. Existing roots with
+     * unsuitable ownership or permissions are rejected before any cache file is used.
+     */
     private static void privateDirectory(Path directory) throws IOException {
         UserPrincipal user = directory.getFileSystem().getUserPrincipalLookupService()
                 .lookupPrincipalByName(System.getProperty("user.name"));
@@ -165,7 +188,9 @@ final class JnaNativeCache {
                     .setPrincipal(user).setPermissions(EnumSet.allOf(AclEntryPermission.class))
                     .setFlags(AclEntryFlag.FILE_INHERIT, AclEntryFlag.DIRECTORY_INHERIT).build());
             boolean created = createDirectory(directory, new FileAttribute<List<AclEntry>>() {
+                @Override
                 public String name() { return "acl:acl"; }
+                @Override
                 public List<AclEntry> value() { return acl; }
             });
             AclFileAttributeView attributes = Files.getFileAttributeView(directory, AclFileAttributeView.class, NOFOLLOW_LINKS);

@@ -16,7 +16,11 @@ import java.io.RandomAccessFile;
 class ClientConnectionW32 implements ClientConnection {
     private static final int READ_WRITE = 0x1 | 0x2 | 0x4;
 
-    // Bind only the functions used by the client, avoiding the full Kernel32 proxy at startup.
+    /**
+     * Opens the BWAPI server's game table and game-state shared-memory mappings.
+     * Binding only these two kernel32 functions avoids initializing JNA's full
+     * Kernel32 proxy before the client can discover a server.
+     */
     interface MappingKernel extends StdCallLibrary {
         MappingKernel INSTANCE = Native.load("kernel32", MappingKernel.class, W32APIOptions.DEFAULT_OPTIONS);
 

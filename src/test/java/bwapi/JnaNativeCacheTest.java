@@ -26,6 +26,13 @@ import static java.nio.file.StandardOpenOption.WRITE;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
+/**
+ * Verifies native-library selection, cache reuse, and fallback without a BWAPI server.
+ * Small byte arrays exercise cache publication and permission checks independently
+ * of native loading. Subprocess tests load the real JNA library in a fresh JVM for
+ * each scenario because native initialization cannot be reset within one JVM.
+ * Bundled-DLL cases require Windows; POSIX permission cases require a POSIX file store.
+ */
 public class JnaNativeCacheTest {
     @Rule
     public TemporaryFolder temporary = new TemporaryFolder();
@@ -77,7 +84,6 @@ public class JnaNativeCacheTest {
         assertArrayEquals(new byte[] {2}, Files.readAllBytes(other));
     }
 
-    // Fresh JVMs exercise native initialization, which cannot be reset between tests in one JVM.
     @Test
     public void clientLoadsAndReusesCacheAcrossProcessesAndRepairsBadBytes() throws Exception {
         Path base = temporary.newFolder().toPath();
@@ -186,6 +192,11 @@ public class JnaNativeCacheTest {
         assertFalse(result, value(result, "native").contains(distribution.toString()));
     }
 
+    /**
+     * Builds a minimal distribution fixture. Loading the helper from bot.jar gives
+     * it a real artifact location for finding adjacent DLLs; the rest of the classes
+     * remain on the test classpath. All Windows architectures are included together.
+     */
     private String bundledClasspath(Path distribution) throws Exception {
         Path jar = distribution.resolve("bot.jar");
         try (JarOutputStream output = new JarOutputStream(Files.newOutputStream(jar));
@@ -215,13 +226,14 @@ public class JnaNativeCacheTest {
         return startOnClasspath(base, testClasspath(), options);
     }
 
+    // Use the test JVM's runtime and an isolated working/temp directory for each scenario.
     private Process startOnClasspath(Path base, String classpath, String... options) throws Exception {
         String executable = System.getProperty("os.name").startsWith("Windows") ? "java.exe" : "java";
         List<String> command = new ArrayList<>(Arrays.asList(
                 Paths.get(System.getProperty("java.home"), "bin", executable).toString(),
                 "-Xmx128m", "-XX:-UsePerfData", "-Djava.io.tmpdir=" + base, "-Djna.tmpdir=" + base));
         command.addAll(Arrays.asList(options));
-        command.addAll(Arrays.asList("-cp", classpath, Probe.class.getName()));
+        command.addAll(Arrays.asList("-cp", classpath, NativeLoadingProbe.class.getName()));
         ProcessBuilder builder = new ProcessBuilder(command).directory(base.toFile()).redirectErrorStream(true);
         for (String name : new String[] {"TEMP", "TMP", "TMPDIR"}) builder.environment().put(name, base.toString());
         return builder.start();
@@ -255,7 +267,11 @@ public class JnaNativeCacheTest {
         throw new AssertionError(output);
     }
 
-    public static class Probe {
+    /**
+     * Child-JVM entry point: constructs a client without connecting to a game, then
+     * reports the loaded library and boot-path setting for the parent's assertions.
+     */
+    public static class NativeLoadingProbe {
         public static void main(String[] args) {
             if (Boolean.getBoolean("probe.preload")) System.out.println("preload=" + Native.POINTER_SIZE);
             new Client(new BWClient(new DefaultBWListener()));

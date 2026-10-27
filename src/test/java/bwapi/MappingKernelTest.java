@@ -13,7 +13,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assume.assumeTrue;
 
 /**
- * Verifies the minimal Windows mapping binding against a real shared-memory object.
+ * Verifies the Windows mapping binding's JNA signatures against a real shared-memory object.
  * The existing JNA Kernel32 binding creates the mapping and its first view;
  * MappingKernel opens a second view. Reads and writes must agree in both directions.
  * A Unicode name checks Windows string marshalling, and a missing mapping must
@@ -26,7 +26,7 @@ public class MappingKernelTest {
     }
 
     @Test
-    public void opensAndMapsSharedMemory() {
+    public void opensUnicodeNamedMappingAndSharesWritesBetweenViews() {
         // Include Unicode to exercise the same W32API string mapping used by the client.
         String name = "Local\\jbwapi-mapping-\u03bb-" + System.nanoTime();
         int access = WinNT.SECTION_MAP_READ | WinNT.SECTION_MAP_WRITE;
