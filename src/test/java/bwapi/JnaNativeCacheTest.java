@@ -1,6 +1,7 @@
 package bwapi;
 
 import com.sun.jna.Native;
+import com.sun.jna.Platform;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -18,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 
 import static java.nio.file.StandardOpenOption.WRITE;
 import static org.junit.Assert.*;
@@ -137,14 +140,88 @@ public class JnaNativeCacheTest {
         }
     }
 
+    @Test
+    public void bundledWindowsLibraryIsSelectedWithoutFlagsFromAnotherWorkingDirectory() throws Exception {
+        assumeTrue(Platform.isWindows());
+        Path distribution = temporary.newFolder("bot with spaces #").toPath();
+        String classpath = bundledClasspath(distribution);
+        Path base = temporary.newFolder("unrelated working directory").toPath();
+        String result = finish(startOnClasspath(base, classpath));
+        Path expected = distribution.resolve("natives/com/sun/jna/" + Platform.RESOURCE_PREFIX + "/jnidispatch.dll");
+        assertEquals(expected.toString(), value(result, "native"));
+        assertEquals("unset", value(result, "boot"));
+        assertFalse(Files.exists(base.resolve(JnaNativeCache.directoryName())));
+        // Both flags forbid cache extraction, but neither forbids loading an existing bundled DLL.
+        result = finish(startOnClasspath(base, classpath, "-Djna.nounpack=true", "-Djbwapi.nativeCache=false"));
+        assertEquals(expected.toString(), value(result, "native"));
+        String explicit = base.resolve("explicit").toString();
+        result = finish(startOnClasspath(base, classpath, "-Djna.boot.library.path=" + explicit));
+        assertEquals(explicit, value(result, "boot"));
+        assertNotEquals(expected.toString(), value(result, "native"));
+    }
+
+    @Test
+    public void staleOrMissingBundledWindowsLibraryFallsBackToCache() throws Exception {
+        assumeTrue(Platform.isWindows());
+        Path distribution = temporary.newFolder().toPath();
+        String classpath = bundledClasspath(distribution);
+        Path base = temporary.newFolder().toPath();
+        Path library = distribution.resolve("natives/com/sun/jna/" + Platform.RESOURCE_PREFIX + "/jnidispatch.dll");
+        Files.write(library, new byte[] {0});
+        String result = finish(startOnClasspath(base, classpath));
+        assertTrue(result, value(result, "native").contains(JnaNativeCache.directoryName()));
+        assertArrayEquals(new byte[] {0}, Files.readAllBytes(library));
+        Files.delete(library);
+        assertEquals(value(result, "native"), value(finish(startOnClasspath(base, classpath)), "native"));
+    }
+
+    @Test
+    public void bundledWindowsLibrariesAreIgnoredOnOtherPlatforms() throws Exception {
+        assumeTrue(!Platform.isWindows());
+        Path distribution = temporary.newFolder().toPath();
+        String classpath = bundledClasspath(distribution);
+        Path base = temporary.newFolder().toPath();
+        String result = finish(startOnClasspath(base, classpath));
+        assertTrue(result, value(result, "native").contains(JnaNativeCache.directoryName()));
+        assertFalse(result, value(result, "native").contains(distribution.toString()));
+    }
+
+    private String bundledClasspath(Path distribution) throws Exception {
+        Path jar = distribution.resolve("bot.jar");
+        try (JarOutputStream output = new JarOutputStream(Files.newOutputStream(jar));
+             InputStream input = JnaNativeCache.class.getResourceAsStream("JnaNativeCache.class")) {
+            output.putNextEntry(new JarEntry("bwapi/JnaNativeCache.class"));
+            byte[] bytes = new byte[4096];
+            int size;
+            while ((size = input.read(bytes)) != -1) output.write(bytes, 0, size);
+            output.closeEntry();
+        }
+        for (String arch : new String[] {"win32-x86", "win32-x86-64", "win32-aarch64"}) {
+            String resource = "com/sun/jna/" + arch + "/jnidispatch.dll";
+            Path library = distribution.resolve("natives/" + resource);
+            Files.createDirectories(library.getParent());
+            try (InputStream input = Native.class.getResourceAsStream("/" + resource)) {
+                Files.copy(input, library);
+            }
+        }
+        return jar + System.getProperty("path.separator") + testClasspath();
+    }
+
+    private String testClasspath() {
+        return System.getProperty("surefire.test.class.path", System.getProperty("java.class.path"));
+    }
+
     private Process start(Path base, String... options) throws Exception {
+        return startOnClasspath(base, testClasspath(), options);
+    }
+
+    private Process startOnClasspath(Path base, String classpath, String... options) throws Exception {
         String executable = System.getProperty("os.name").startsWith("Windows") ? "java.exe" : "java";
         List<String> command = new ArrayList<>(Arrays.asList(
                 Paths.get(System.getProperty("java.home"), "bin", executable).toString(),
                 "-Xmx128m", "-XX:-UsePerfData", "-Djava.io.tmpdir=" + base, "-Djna.tmpdir=" + base));
         command.addAll(Arrays.asList(options));
-        command.addAll(Arrays.asList("-cp", System.getProperty("surefire.test.class.path",
-                System.getProperty("java.class.path")), Probe.class.getName()));
+        command.addAll(Arrays.asList("-cp", classpath, Probe.class.getName()));
         ProcessBuilder builder = new ProcessBuilder(command).directory(base.toFile()).redirectErrorStream(true);
         for (String name : new String[] {"TEMP", "TMP", "TMPDIR"}) builder.environment().put(name, base.toString());
         return builder.start();

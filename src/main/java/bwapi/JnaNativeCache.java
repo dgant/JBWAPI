@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
@@ -24,7 +25,7 @@ import java.util.List;
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.StandardOpenOption.*;
 
-/** Reuses JNA's own native binary without its per-process temporary-file extraction. */
+/** Loads a bundled or cached copy of JNA's native binary before ordinary extraction. */
 final class JnaNativeCache {
     private static final String BOOT_PATH = "jna.boot.library.path";
 
@@ -48,8 +49,12 @@ final class JnaNativeCache {
                 while ((size = input.read(buffer)) != -1) output.write(buffer, 0, size);
                 binary = output.toByteArray();
             }
-            Path base = Paths.get(System.getProperty("jna.tmpdir", System.getProperty("java.io.tmpdir")));
-            Path library = cache(base.resolve(directoryName()), name, binary);
+            Path library = bundledLibrary(resource, binary);
+            if (library == null && !Boolean.getBoolean("jna.nounpack")
+                    && !"false".equalsIgnoreCase(System.getProperty("jbwapi.nativeCache"))) {
+                Path base = Paths.get(System.getProperty("jna.tmpdir", System.getProperty("java.io.tmpdir")));
+                library = cache(base.resolve(directoryName()), name, binary);
+            }
             if (library == null || isConfigured()) return;
             path = library.getParent().toAbsolutePath().toString();
             System.setProperty(BOOT_PATH, path);
@@ -69,14 +74,27 @@ final class JnaNativeCache {
     }
 
     private static boolean isConfigured() {
-        if (Boolean.getBoolean("jna.loaded") || "false".equalsIgnoreCase(System.getProperty("jbwapi.nativeCache"))) {
+        if (Boolean.getBoolean("jna.loaded")) {
             return true;
         }
-        for (String setting : new String[] {BOOT_PATH, "jna.boot.library.name", "jna.nounpack",
+        for (String setting : new String[] {BOOT_PATH, "jna.boot.library.name",
                 "jna.noclasspath", "jna.nosys", "jna.prefix", "jnidispatch.preserve"}) {
             if (System.getProperty(setting) != null) return true;
         }
         return false;
+    }
+
+    private static Path bundledLibrary(String resource, byte[] binary) {
+        if (!Platform.isWindows()) return null;
+        try {
+            // Resolve beside the JAR (or wrapped EXE), never relative to a launcher's working directory.
+            Path artifact = Paths.get(JnaNativeCache.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            Path library = artifact.resolveSibling("natives").resolve(resource.substring(1));
+            // A replaced JAR must not accidentally load a DLL left over from another JNA version.
+            return matches(library, binary) ? library : null;
+        } catch (IOException | URISyntaxException | RuntimeException unavailable) {
+            return null;
+        }
     }
 
     static String directoryName() {

@@ -16,8 +16,7 @@
             <unpack>true</unpack>
             <unpackOptions>
                 <includes>
-                    <include>com/sun/jna/win32-x86/jnidispatch.dll</include>
-                    <include>com/sun/jna/win32-x86-64/jnidispatch.dll</include>
+                    <include>com/sun/jna/win32-*/jnidispatch.dll</include>
                     <include>META-INF/LICENSE</include>
                     <include>META-INF/AL2.0</include>
                     <include>META-INF/LGPL2.1</include>
