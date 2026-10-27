@@ -76,12 +76,17 @@ dependencies {
 Alternatively add the latest `.jar` from the [releases](https://github.com/JavaBWAPI/JBWAPI/releases) page to your
 project.
 
-### Faster Windows startup
+### Faster startup
 
-JBWAPI connects to BWAPI before allocating asynchronous frame buffers. To reduce the time
-before the first connection attempt, bots can also ship JNA's native DLL alongside
-their JAR. This avoids extracting a temporary DLL on every JVM launch, including
-Java 8's first-use `SecureRandom` initialization for temporary filenames.
+JBWAPI connects to BWAPI before initializing performance metrics or allocating
+asynchronous frame buffers. This reduces work before connection readiness on all
+supported platforms.
+
+#### Optional Windows native libraries
+
+On Windows, bots can also ship JNA's native DLL alongside their JAR to reduce the time
+before the first connection attempt. This avoids extracting a temporary DLL on every
+JVM launch, including Java 8's first-use `SecureRandom` initialization for temporary filenames.
 
 `mvn package` produces `target/jbwapi-2.2.0-windows-natives.zip` in addition to the
 existing JARs. The ZIP contains the Windows x86 and x86-64 `jnidispatch.dll` files
