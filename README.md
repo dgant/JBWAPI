@@ -76,6 +76,33 @@ dependencies {
 Alternatively add the latest `.jar` from the [releases](https://github.com/JavaBWAPI/JBWAPI/releases) page to your
 project.
 
+### Faster Windows startup
+
+JBWAPI connects to BWAPI before allocating asynchronous frame buffers. To reduce the time
+before the first connection attempt, bots can also ship JNA's native DLL alongside
+their JAR. This avoids extracting a temporary DLL on every JVM launch, including
+Java 8's first-use `SecureRandom` initialization for temporary filenames.
+
+`mvn package` produces `target/jbwapi-2.2.0-windows-natives.zip` in addition to the
+existing JARs. The ZIP contains the Windows x86 and x86-64 `jnidispatch.dll` files
+from the resolved JNA dependency, plus JNA's license files. Extract the ZIP into
+your bot distribution, for example into a `natives` directory, and set
+`jna.boot.library.path` before any JNA classes initialize:
+
+```bat
+java "-Djna.boot.library.path=C:\MyBot\natives\com\sun\jna\win32-x86" -jar MyBot.jar
+```
+
+Use `win32-x86` for a 32-bit JVM and `win32-x86-64` for a 64-bit JVM, regardless of
+StarCraft's bitness. Keep the native DLLs matched to the JNA version used by the bot;
+regenerate them when that dependency changes. If your bot overrides JBWAPI's JNA
+dependency, extract the DLLs from that resolved JNA JAR instead.
+
+For a packaging check, add `-Djna.nounpack=true` to fail if JNA would need to extract
+a missing DLL. Without this option or a configured native directory, JNA retains
+its normal loading and extraction behavior. Bundling these DLLs is optional and
+does not require bundling a JRE or changing the StarCraft launch sequence.
+
 ## Compilation
 
 `mvnw.cmd package`
