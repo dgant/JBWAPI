@@ -12,6 +12,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assume.assumeTrue;
 
+/**
+ * Verifies the minimal Windows mapping binding against a real shared-memory object.
+ * The existing JNA Kernel32 binding creates the mapping and its first view;
+ * MappingKernel opens a second view. Reads and writes must agree in both directions.
+ * A Unicode name checks Windows string marshalling, and a missing mapping must
+ * return null. These tests require Windows but do not require a BWAPI server.
+ */
 public class MappingKernelTest {
     @Before
     public void requireWindows() {

@@ -82,6 +82,10 @@ JBWAPI connects to BWAPI before initializing performance metrics or allocating
 asynchronous frame buffers. This reduces work before connection readiness on all
 supported platforms. No launch configuration changes are needed for these improvements.
 
+A single bot JAR can still include JBWAPI and its dependencies for use on supported
+platforms. JNA selects and extracts the matching native library at runtime; the
+optional Windows packaging below avoids that extraction.
+
 #### Optional Windows native libraries
 
 On Windows, bots can also ship JNA's native DLL alongside their JAR to reduce the time
