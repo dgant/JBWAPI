@@ -148,12 +148,12 @@ public class JnaNativeCacheTest {
         Path base = temporary.newFolder("unrelated working directory").toPath();
         String result = finish(startOnClasspath(base, classpath));
         Path expected = distribution.resolve("natives/com/sun/jna/" + Platform.RESOURCE_PREFIX + "/jnidispatch.dll");
-        assertEquals(expected.toString(), value(result, "native"));
+        assertTrue(result, Files.isSameFile(expected, Paths.get(value(result, "native"))));
         assertEquals("unset", value(result, "boot"));
         assertFalse(Files.exists(base.resolve(JnaNativeCache.directoryName())));
         // Both flags forbid cache extraction, but neither forbids loading an existing bundled DLL.
         result = finish(startOnClasspath(base, classpath, "-Djna.nounpack=true", "-Djbwapi.nativeCache=false"));
-        assertEquals(expected.toString(), value(result, "native"));
+        assertTrue(result, Files.isSameFile(expected, Paths.get(value(result, "native"))));
         String explicit = base.resolve("explicit").toString();
         result = finish(startOnClasspath(base, classpath, "-Djna.boot.library.path=" + explicit));
         assertEquals(explicit, value(result, "boot"));
