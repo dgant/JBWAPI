@@ -76,48 +76,6 @@ dependencies {
 Alternatively add the latest `.jar` from the [releases](https://github.com/JavaBWAPI/JBWAPI/releases) page to your
 project.
 
-### Faster startup
-
-JBWAPI connects to BWAPI before initializing performance metrics or allocating
-asynchronous frame buffers. This reduces work before connection readiness on all
-supported platforms. No launch configuration changes are needed for these improvements.
-
-#### One distribution for every supported platform
-
-`mvn package` produces `target/jbwapi-2.2.0-distribution.zip`: the cross-platform
-JAR with dependencies, plus `natives/` containing the matching Windows x86,
-x86-64, and ARM64 DLLs and their licenses. Keep that directory beside the JAR when unpacking.
-There is no operating-system or JVM-bitness variant to choose and no native-path
-setting to configure.
-
-On Windows, JBWAPI automatically selects the DLL for the running JVM's architecture,
-regardless of StarCraft's bitness. It resolves `natives/` beside its JAR (or wrapped
-EXE), independently of the launcher's working directory, and checks the DLL against
-the bundled binary so stale files cannot supply a different JNA version. Other
-platforms ignore the Windows files and use their own native-loading path.
-
-A single bot JAR can still include JBWAPI and its dependencies. If the matching
-Windows DLL is absent, outdated, or unreadable, or on another platform, JBWAPI
-caches its bundled native library in a private directory under `jna.tmpdir`
-(or `java.io.tmpdir`) and verifies it before reuse. Unavailable caches fall back to
-JNA's normal loading. Explicit JNA loading settings take precedence, and an already
-initialized JNA is left alone. `-Djbwapi.nativeCache=false` disables the cache while
-still allowing bundled DLLs. Cached files can be deleted when bots are not running;
-they will be recreated as needed.
-
-#### Packaging your own bot
-
-Include the Windows architectures supplied by your JNA dependency in the same
-release, at `natives/com/sun/jna/<platform>/jnidispatch.dll` beside the bot's fat JAR
-(`win32-x86`, `win32-x86-64`, and `win32-aarch64` with JNA 5.18.1).
-JBWAPI selects the appropriate one automatically. Include the JNA license files
-as well. Extract DLLs from the JNA dependency actually used in that bot so they
-always match, including when overriding JBWAPI's JNA dependency.
-
-For a Windows packaging check, add
-`-Djna.nounpack=true`: the bundled DLL must load without runtime extraction.
-An explicit `jna.boot.library.path` remains available for custom deployments.
-
 ## Compilation
 
 `mvnw.cmd package`
@@ -125,6 +83,15 @@ An explicit `jna.boot.library.path` remains available for custom deployments.
 or if you already have maven installed
 
 `mvn package`
+
+The build also produces `target/jbwapi-2.2.0-distribution.zip`, containing the
+JAR with dependencies and Windows native libraries with their licenses. Keep
+`natives/` beside the JAR for automatic loading. The same package works on other
+supported platforms; JAR-only deployments remain supported through native caching.
+
+For bots that bundle JBWAPI into their own JAR, include the Windows DLLs and licenses
+from the bot's resolved JNA dependency in an adjacent `natives/` directory, preserving
+their paths (for example, `natives/com/sun/jna/win32-x86/jnidispatch.dll`).
 
 ## Example
 
