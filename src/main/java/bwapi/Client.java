@@ -27,16 +27,23 @@ package bwapi;
 
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
-import com.sun.jna.platform.win32.Kernel32;
+import com.sun.jna.platform.win32.WinNT.HANDLE;
+import com.sun.jna.win32.StdCallLibrary;
 import com.sun.jna.win32.W32APIOptions;
 
 import java.io.RandomAccessFile;
 
 class Client {
-    interface MappingKernel extends Kernel32 {
-        MappingKernel INSTANCE = Native.load(MappingKernel.class, W32APIOptions.DEFAULT_OPTIONS);
+    /**
+     * Opens BWAPI shared-memory mappings without initializing JNA's full Kernel32 proxy.
+     * These are the only Windows functions needed to discover and connect to a server.
+     */
+    interface MappingKernel extends StdCallLibrary {
+        MappingKernel INSTANCE = Native.load("kernel32", MappingKernel.class, W32APIOptions.DEFAULT_OPTIONS);
 
         HANDLE OpenFileMapping(int desiredAccess, boolean inherit, String name);
+
+        Pointer MapViewOfFile(HANDLE mapping, int desiredAccess, int offsetHigh, int offsetLow, int bytesToMap);
     }
 
     private static final int READ_WRITE = 0x1 | 0x2 | 0x4;
@@ -114,7 +121,7 @@ class Client {
 
         // Expose the BWAPI list of games from shared memory via a ByteBuffer
         try {
-            final Pointer gameTableView = Kernel32.INSTANCE.MapViewOfFile(MappingKernel.INSTANCE
+            final Pointer gameTableView = MappingKernel.INSTANCE.MapViewOfFile(MappingKernel.INSTANCE
                             .OpenFileMapping(READ_WRITE, false, "Local\\bwapi_shared_memory_game_list"), READ_WRITE,
                     0, 0, GameTable.SIZE);
             if (gameTableView == null) {
@@ -175,7 +182,7 @@ class Client {
 
         // Expose the raw game data from shared memory via a ByteBuffer
         try {
-            final Pointer mapFileView = Kernel32.INSTANCE.MapViewOfFile(MappingKernel.INSTANCE
+            final Pointer mapFileView = MappingKernel.INSTANCE.MapViewOfFile(MappingKernel.INSTANCE
                             .OpenFileMapping(READ_WRITE, false, sharedMemoryName), READ_WRITE,
                     0, 0, ClientData.GameData.SIZE);
             mapFileHandle = new WrappedBuffer(mapFileView, ClientData.GameData.SIZE);

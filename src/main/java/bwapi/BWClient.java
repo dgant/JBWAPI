@@ -15,6 +15,7 @@ public class BWClient {
     public BWClient(final BWEventListener eventListener) {
         Objects.requireNonNull(eventListener);
         this.eventListener = eventListener;
+        JnaNativeLoader.initialize();
     }
 
     /**
@@ -89,8 +90,6 @@ public class BWClient {
     public void startGame(BWClientConfiguration gameConfiguration) {
         gameConfiguration.validateAndLock();
         this.configuration = gameConfiguration;
-        this.performanceMetrics = new PerformanceMetrics(configuration);
-        botWrapper = new BotWrapper(configuration, eventListener);
 
         // Use reduced priority to encourage Windows to give priority to StarCraft.exe/BWAPI.
         // If BWAPI doesn't get priority, it may not detect completion of a frame on our end in timely fashion.
@@ -103,6 +102,10 @@ public class BWClient {
             client = new Client(this);
         }
         client.reconnect();
+
+        // Allocate game bookkeeping and async frame buffers only after the BWAPI handshake.
+        this.performanceMetrics = new PerformanceMetrics(configuration);
+        botWrapper = new BotWrapper(configuration, eventListener);
 
         do {
             ClientData.GameData liveGameData = client.liveClientData().gameData();
