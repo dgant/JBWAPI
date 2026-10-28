@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
@@ -74,13 +75,13 @@ public class JnaNativeCacheTest {
         Path root = base.resolve("cache");
         Path library = JnaNativeCache.cache(root, "library", new byte[] {1});
         Files.setPosixFilePermissions(root, PosixFilePermissions.fromString("rwxrwxrwx"));
-        assertThrows(java.io.IOException.class, () -> JnaNativeCache.cache(root, "library", new byte[] {1}));
+        assertThrows(IOException.class, () -> JnaNativeCache.cache(root, "library", new byte[] {1}));
         Files.setPosixFilePermissions(root, PosixFilePermissions.fromString("rwx------"));
         Path other = base.resolve("other");
         Files.write(other, new byte[] {2});
         Files.delete(library);
         Files.createSymbolicLink(library, other);
-        assertThrows(java.io.IOException.class, () -> JnaNativeCache.cache(root, "library", new byte[] {1}));
+        assertThrows(IOException.class, () -> JnaNativeCache.cache(root, "library", new byte[] {1}));
         assertArrayEquals(new byte[] {2}, Files.readAllBytes(other));
     }
 
@@ -138,12 +139,18 @@ public class JnaNativeCacheTest {
         Path base = temporary.newFolder().toPath();
         List<Process> children = new ArrayList<>();
         try {
-            for (int i = 0; i < 3; ++i) children.add(start(base));
-            for (Process child : children) finish(child);
+            for (int i = 0; i < 3; ++i) {
+                children.add(start(base));
+            }
+            for (Process child : children) {
+                finish(child);
+            }
             String result = finish(start(base));
             assertTrue(result, value(result, "native").contains(JnaNativeCache.directoryName()));
         } finally {
-            for (Process child : children) child.destroyForcibly();
+            for (Process child : children) {
+                child.destroyForcibly();
+            }
         }
     }
 
@@ -206,7 +213,9 @@ public class JnaNativeCacheTest {
             output.putNextEntry(new JarEntry("bwapi/JnaNativeCache.class"));
             byte[] bytes = new byte[4096];
             int size;
-            while ((size = input.read(bytes)) != -1) output.write(bytes, 0, size);
+            while ((size = input.read(bytes)) != -1) {
+                output.write(bytes, 0, size);
+            }
             output.closeEntry();
         }
         for (String arch : new String[] {"win32-x86", "win32-x86-64", "win32-aarch64"}) {
@@ -237,7 +246,9 @@ public class JnaNativeCacheTest {
         command.addAll(Arrays.asList(options));
         command.addAll(Arrays.asList("-cp", classpath, NativeLoadingProbe.class.getName()));
         ProcessBuilder builder = new ProcessBuilder(command).directory(base.toFile()).redirectErrorStream(true);
-        for (String name : new String[] {"TEMP", "TMP", "TMPDIR"}) builder.environment().put(name, base.toString());
+        for (String name : new String[] {"TEMP", "TMP", "TMPDIR"}) {
+            builder.environment().put(name, base.toString());
+        }
         return builder.start();
     }
 
@@ -254,7 +265,9 @@ public class JnaNativeCacheTest {
             try (InputStream input = child.getInputStream(); ByteArrayOutputStream output = new ByteArrayOutputStream()) {
                 byte[] bytes = new byte[4096];
                 int count;
-                while ((count = input.read(bytes)) != -1) output.write(bytes, 0, count);
+                while ((count = input.read(bytes)) != -1) {
+                    output.write(bytes, 0, count);
+                }
                 return output.toString("UTF-8");
             }
         } finally {
@@ -264,9 +277,13 @@ public class JnaNativeCacheTest {
 
     private String value(String output, String key) {
         for (String line : output.split("\\R")) {
-            if (line.startsWith(key + "=")) return line.substring(key.length() + 1);
+            if (line.startsWith(key + "=")) {
+                return line.substring(key.length() + 1);
+            }
         }
-        throw new AssertionError(output);
+        throw new AssertionError("Expected the native-loading probe to report '" + key
+                + "=<value>', but that field was missing. Check the child-JVM output for initialization errors:\n"
+                + output);
     }
 
     /**
@@ -275,7 +292,9 @@ public class JnaNativeCacheTest {
      */
     public static class NativeLoadingProbe {
         public static void main(String[] args) {
-            if (Boolean.getBoolean("probe.preload")) System.out.println("preload=" + Native.POINTER_SIZE);
+            if (Boolean.getBoolean("probe.preload")) {
+                System.out.println("preload=" + Native.POINTER_SIZE);
+            }
             new Client(new BWClient(new DefaultBWListener()));
             System.out.println("pointer=" + Native.POINTER_SIZE);
             System.out.println("native=" + System.getProperty("jnidispatch.path"));

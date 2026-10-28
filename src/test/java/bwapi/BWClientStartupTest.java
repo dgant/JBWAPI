@@ -32,7 +32,10 @@ public class BWClientStartupTest {
                 .withAsyncFrameBufferCapacity(3)
                 .build();
         BufferPoolMXBean directBuffers = ManagementFactory.getPlatformMXBeans(BufferPoolMXBean.class)
-                .stream().filter(pool -> "direct".equals(pool.getName())).findFirst().get();
+                .stream()
+                .filter(pool -> "direct".equals(pool.getName()))
+                .findFirst()
+                .get();
         long bytesBeforeStart = directBuffers.getMemoryUsed();
         doAnswer(invocation -> {
             assertTrue("Connection attempts must precede allocation of even one game-state buffer",
