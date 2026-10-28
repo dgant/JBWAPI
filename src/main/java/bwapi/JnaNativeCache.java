@@ -51,17 +51,8 @@ final class JnaNativeCache {
             if (isConfigured()) return;
             String name = System.mapLibraryName("jnidispatch").replace(".dylib", ".jnilib");
             if (Platform.isAIX()) name = "libjnidispatch.a";
-            String resource = "/com/sun/jna/" + Platform.RESOURCE_PREFIX + "/" + name;
-            // A class literal does not initialize Native; use its loader's exact binary.
-            byte[] binary;
-            try (InputStream input = Native.class.getResourceAsStream(resource);
-                 ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-                if (input == null) return;
-                byte[] buffer = new byte[32768];
-                int size;
-                while ((size = input.read(buffer)) != -1) output.write(buffer, 0, size);
-                binary = output.toByteArray();
-            }
+            byte[] binary = readEmbeddedLibrary(name);
+            if (binary == null) return;
             Path library = bundledLibrary(binary);
             bootName = library == null ? null : "jnidispatch-" + Platform.RESOURCE_PREFIX;
             if (library == null && !Boolean.getBoolean("jna.nounpack")
@@ -75,6 +66,23 @@ final class JnaNativeCache {
             // An optional optimization must not prevent JNA's ordinary loading path.
             return;
         }
+        loadPreparedLibrary(path, bootName);
+    }
+
+    private static byte[] readEmbeddedLibrary(String name) throws IOException {
+        String resource = "/com/sun/jna/" + Platform.RESOURCE_PREFIX + "/" + name;
+        // A class literal does not initialize Native; use its loader's exact binary.
+        try (InputStream input = Native.class.getResourceAsStream(resource);
+             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            if (input == null) return null;
+            byte[] buffer = new byte[32768];
+            int size;
+            while ((size = input.read(buffer)) != -1) output.write(buffer, 0, size);
+            return output.toByteArray();
+        }
+    }
+
+    private static void loadPreparedLibrary(String path, String bootName) {
         try {
             try {
                 System.setProperty(BOOT_PATH, path);
