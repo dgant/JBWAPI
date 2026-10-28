@@ -30,7 +30,7 @@ import static java.nio.file.StandardOpenOption.*;
  * JNA needs this platform-specific library to access shared memory; extracting it
  * from the JAR on every launch adds work before the client can connect to a server.
  *
- * <p>On Windows, first checks the DLL in {@code natives/} beside the containing JAR
+ * <p>On Windows, first checks the architecture-named DLL beside the containing JAR
  * against the embedded library for the running JVM's architecture. Otherwise,
  * reuses or creates a verified copy in a private, per-user temporary cache.
  * Unavailable bundles or caches leave JNA's ordinary loading path available.
@@ -38,6 +38,7 @@ import static java.nio.file.StandardOpenOption.*;
  */
 final class JnaNativeCache {
     private static final String BOOT_PATH = "jna.boot.library.path";
+    private static final String BOOT_NAME = "jna.boot.library.name";
 
     private JnaNativeCache() {
     }
@@ -45,6 +46,7 @@ final class JnaNativeCache {
     /** Call before constructing a platform connector or otherwise initializing JNA. */
     static synchronized void initialize() {
         String path;
+        String bootName;
         try {
             if (isConfigured()) return;
             String name = System.mapLibraryName("jnidispatch").replace(".dylib", ".jnilib");
@@ -60,7 +62,8 @@ final class JnaNativeCache {
                 while ((size = input.read(buffer)) != -1) output.write(buffer, 0, size);
                 binary = output.toByteArray();
             }
-            Path library = bundledLibrary(resource, binary);
+            Path library = bundledLibrary(binary);
+            bootName = library == null ? null : "jnidispatch-" + Platform.RESOURCE_PREFIX;
             if (library == null && !Boolean.getBoolean("jna.nounpack")
                     && !"false".equalsIgnoreCase(System.getProperty("jbwapi.nativeCache"))) {
                 Path base = Paths.get(System.getProperty("jna.tmpdir", System.getProperty("java.io.tmpdir")));
@@ -68,12 +71,17 @@ final class JnaNativeCache {
             }
             if (library == null || isConfigured()) return;
             path = library.getParent().toAbsolutePath().toString();
-            System.setProperty(BOOT_PATH, path);
         } catch (IOException | NoSuchAlgorithmException | RuntimeException unavailable) {
             // An optional optimization must not prevent JNA's ordinary loading path.
             return;
         }
         try {
+            try {
+                System.setProperty(BOOT_PATH, path);
+                if (bootName != null) System.setProperty(BOOT_NAME, bootName);
+            } catch (RuntimeException unavailable) {
+                return;
+            }
             // JNA itself falls back to ordinary extraction if this binary cannot be loaded.
             Class.forName(Native.class.getName(), true, Native.class.getClassLoader());
         } catch (ClassNotFoundException impossible) {
@@ -81,6 +89,7 @@ final class JnaNativeCache {
         } finally {
             // Do not leave a process-wide path pointing at this class loader's JNA version.
             if (path.equals(System.getProperty(BOOT_PATH))) System.clearProperty(BOOT_PATH);
+            if (bootName != null && bootName.equals(System.getProperty(BOOT_NAME))) System.clearProperty(BOOT_NAME);
         }
     }
 
@@ -88,19 +97,19 @@ final class JnaNativeCache {
         if (Boolean.getBoolean("jna.loaded")) {
             return true;
         }
-        for (String setting : new String[] {BOOT_PATH, "jna.boot.library.name",
+        for (String setting : new String[] {BOOT_PATH, BOOT_NAME,
                 "jna.noclasspath", "jna.nosys", "jna.prefix", "jnidispatch.preserve"}) {
             if (System.getProperty(setting) != null) return true;
         }
         return false;
     }
 
-    private static Path bundledLibrary(String resource, byte[] binary) {
+    private static Path bundledLibrary(byte[] binary) {
         if (!Platform.isWindows()) return null;
         try {
             // Resolve beside the JAR (or wrapped EXE), never relative to a launcher's working directory.
             Path artifact = Paths.get(JnaNativeCache.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-            Path library = artifact.resolveSibling("natives").resolve(resource.substring(1));
+            Path library = artifact.resolveSibling("jnidispatch-" + Platform.RESOURCE_PREFIX + ".dll");
             // A replaced JAR must not accidentally load a DLL left over from another JNA version.
             return matches(library, binary) ? library : null;
         } catch (IOException | URISyntaxException | RuntimeException unavailable) {

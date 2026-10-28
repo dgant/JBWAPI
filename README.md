@@ -84,14 +84,10 @@ or if you already have maven installed
 
 `mvn package`
 
-The build also produces `target/jbwapi-2.2.0-distribution.zip`, containing the
-JAR with dependencies and Windows native libraries with their licenses. Keep
-`natives/` beside the JAR for automatic loading. The same package works on other
-supported platforms; JAR-only deployments remain supported through native caching.
-
-For bots that bundle JBWAPI into their own JAR, include the Windows DLLs and licenses
-from the bot's resolved JNA dependency in an adjacent `natives/` directory, preserving
-their paths (for example, `natives/com/sun/jna/win32-x86/jnidispatch.dll`).
+The build also produces `target/jbwapi-2.2.0-distribution.zip`. Keep its DLLs beside
+your bot's JAR to avoid unpacking them at startup, so the bot can connect sooner.
+The DLLs must match your bot's JNA version. No JVM flags are needed, and the JAR
+still works on its own.
 
 ## Example
 

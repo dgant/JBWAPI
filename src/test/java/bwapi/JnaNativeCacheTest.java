@@ -107,6 +107,7 @@ public class JnaNativeCacheTest {
         String result = finish(start(base));
         assertFalse(result, value(result, "native").contains(JnaNativeCache.directoryName()));
         assertEquals("unset", value(result, "boot"));
+        assertEquals("unset", value(result, "bootName"));
     }
 
     @Test
@@ -153,9 +154,10 @@ public class JnaNativeCacheTest {
         String classpath = bundledClasspath(distribution);
         Path base = temporary.newFolder("unrelated working directory").toPath();
         String result = finish(startOnClasspath(base, classpath));
-        Path expected = distribution.resolve("natives/com/sun/jna/" + Platform.RESOURCE_PREFIX + "/jnidispatch.dll");
+        Path expected = distribution.resolve("jnidispatch-" + Platform.RESOURCE_PREFIX + ".dll");
         assertTrue(result, Files.isSameFile(expected, Paths.get(value(result, "native"))));
         assertEquals("unset", value(result, "boot"));
+        assertEquals("unset", value(result, "bootName"));
         assertFalse(Files.exists(base.resolve(JnaNativeCache.directoryName())));
         // Both flags forbid cache extraction, but neither forbids loading an existing bundled DLL.
         result = finish(startOnClasspath(base, classpath, "-Djna.nounpack=true", "-Djbwapi.nativeCache=false"));
@@ -172,7 +174,7 @@ public class JnaNativeCacheTest {
         Path distribution = temporary.newFolder().toPath();
         String classpath = bundledClasspath(distribution);
         Path base = temporary.newFolder().toPath();
-        Path library = distribution.resolve("natives/com/sun/jna/" + Platform.RESOURCE_PREFIX + "/jnidispatch.dll");
+        Path library = distribution.resolve("jnidispatch-" + Platform.RESOURCE_PREFIX + ".dll");
         Files.write(library, new byte[] {0});
         String result = finish(startOnClasspath(base, classpath));
         assertTrue(result, value(result, "native").contains(JnaNativeCache.directoryName()));
@@ -209,7 +211,7 @@ public class JnaNativeCacheTest {
         }
         for (String arch : new String[] {"win32-x86", "win32-x86-64", "win32-aarch64"}) {
             String resource = "com/sun/jna/" + arch + "/jnidispatch.dll";
-            Path library = distribution.resolve("natives/" + resource);
+            Path library = distribution.resolve("jnidispatch-" + arch + ".dll");
             Files.createDirectories(library.getParent());
             try (InputStream input = Native.class.getResourceAsStream("/" + resource)) {
                 Files.copy(input, library);
@@ -278,6 +280,7 @@ public class JnaNativeCacheTest {
             System.out.println("pointer=" + Native.POINTER_SIZE);
             System.out.println("native=" + System.getProperty("jnidispatch.path"));
             System.out.println("boot=" + System.getProperty("jna.boot.library.path", "unset"));
+            System.out.println("bootName=" + System.getProperty("jna.boot.library.name", "unset"));
         }
     }
 }
