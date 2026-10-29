@@ -5,6 +5,7 @@ import bwapi.ClientData.GameData;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static bwapi.CommandType.*;
 import static bwapi.Point.TILE_WALK_FACTOR;
@@ -50,6 +51,17 @@ public final class Game {
     private List<Unit> staticMinerals;
     private List<Unit> staticGeysers;
     private List<Unit> staticNeutralUnits;
+
+    private List<Unit> cachedUnitSource;
+    private int cachedUnitFrame = -1;
+    private final Map<Player, List<Unit>> unitsByPlayer = new HashMap<>();
+    private final List<Unit> minerals = new ArrayList<>();
+    private final List<Unit> geysers = new ArrayList<>();
+    private final List<Unit> neutralUnits = new ArrayList<>();
+    private final List<Unit> pylons = new ArrayList<>();
+    final UnitFinder unitFinder = new UnitFinder(this);
+    private List<Bullet> activeBullets;
+    private int bulletFrame = -1;
 
     // CONSTANT
     private Player[] players;
@@ -151,6 +163,9 @@ public final class Game {
     */
     void init() {
         visibleUnits.clear();
+        cachedUnitSource = null;
+        unitsByPlayer.clear();
+        activeBullets = null;
 
         loadedUnitsCache.reset();
         interceptorsCache.reset();
@@ -352,15 +367,51 @@ public final class Game {
         return allUnits;
     }
 
+    private void updateUnitLists() {
+        // allUnits is replaced for each frame (and when a new game is initialized).
+        final int frame = getFrameCount();
+        if (cachedUnitSource == allUnits && cachedUnitFrame == frame) {
+            return;
+        }
+        unitsByPlayer.values().forEach(List::clear);
+        minerals.clear();
+        geysers.clear();
+        neutralUnits.clear();
+        pylons.clear();
+        for (final Unit unit : allUnits) {
+            final Player player = unit.getPlayer();
+            final UnitType type = unit.getType();
+            unitsByPlayer.computeIfAbsent(player, unused -> new ArrayList<>()).add(unit);
+            if (type.isMineralField()) {
+                minerals.add(unit);
+            }
+            if (type == Resource_Vespene_Geyser) {
+                geysers.add(unit);
+            }
+            if (player.equals(neutral())) {
+                neutralUnits.add(unit);
+            }
+            if (player.equals(self()) && type == Protoss_Pylon) {
+                pylons.add(unit);
+            }
+        }
+        cachedUnitSource = allUnits;
+        cachedUnitFrame = frame;
+    }
+
+    List<Unit> getUnits(final Player player) {
+        updateUnitLists();
+        return new ArrayList<>(unitsByPlayer.getOrDefault(player, Collections.emptyList()));
+    }
+
     /**
      * Retrieves the set of all accessible @minerals in the game.
      *
      * @return List<Unit> containing @minerals
      */
     public List<Unit> getMinerals() {
-        return getAllUnits().stream()
-                .filter(u -> u.getType().isMineralField())
-                .collect(Collectors.toList());
+        updateUnitLists();
+        return new ArrayList<>(minerals);
     }
 
     /**
@@ -369,9 +420,8 @@ public final class Game {
      * @return List<Unit> containing @geysers
      */
     public List<Unit> getGeysers() {
-        return getAllUnits().stream()
-                .filter(u -> u.getType() == Resource_Vespene_Geyser)
-                .collect(Collectors.toList());
+        updateUnitLists();
+        return new ArrayList<>(geysers);
     }
 
     /**
@@ -381,9 +431,8 @@ public final class Game {
      * @return List<Unit> containing all neutral units.
      */
     public List<Unit> getNeutralUnits() {
-        return getAllUnits().stream()
-                .filter(u -> u.getPlayer().equals(neutral()))
-                .collect(Collectors.toList());
+        updateUnitLists();
+        return new ArrayList<>(neutralUnits);
     }
 
     /**
@@ -428,9 +477,14 @@ public final class Game {
      * @return List<Bullet> containing all accessible {@link Bullet} objects.
      */
     public List<Bullet> getBullets() {
-        return Arrays.stream(bullets)
-                .filter(Bullet::exists)
-                .collect(Collectors.toList());
+        final int frame = getFrameCount();
+        if (activeBullets == null || bulletFrame != frame) {
+            activeBullets = Arrays.stream(bullets)
+                    .filter(Bullet::exists)
+                    .collect(Collectors.toList());
+            bulletFrame = frame;
+        }
+        return new ArrayList<>(activeBullets);
     }
 
     /**
@@ -680,7 +734,7 @@ public final class Game {
      * given build tile.
      */
     public List<Unit> getUnitsOnTile(final int tileX, final int tileY, final UnitFilter pred) {
-        return getAllUnits().stream().filter(u -> {
+        return unitFinder.onTile(tileX, tileY).filter(u -> {
             final TilePosition tp = u.getTilePosition();
             return tp.x == tileX && tp.y == tileY && pred.test(u);
         }).collect(Collectors.toList());
@@ -702,9 +756,13 @@ public final class Game {
      * given rectangle bounds.
      */
     public List<Unit> getUnitsInRectangle(final int left, final int top, final int right, final int bottom, final UnitFilter pred) {
-        return getAllUnits().stream()
-                .filter(u -> left <= u.getRight() && top <= u.getBottom() && right >= u.getLeft() && bottom >= u.getTop() && pred.test(u))
-                .collect(Collectors.toList());
+        return unitsInRectangle(left, top, right, bottom, pred).collect(Collectors.toList());
+    }
+
+    private Stream<Unit> unitsInRectangle(final int left, final int top, final int right, final int bottom, final UnitFilter pred) {
+        return unitFinder.inRectangle((long) left - UnitType.maxUnitWidth(), (long) top - UnitType.maxUnitHeight(),
+                (long) right + UnitType.maxUnitWidth(), (long) bottom + UnitType.maxUnitHeight())
+                .filter(u -> left <= u.getRight() && top <= u.getBottom() && right >= u.getLeft() && bottom >= u.getTop() && pred.test(u));
     }
 
     public List<Unit> getUnitsInRectangle(final Position leftTop, final Position rightBottom) {
@@ -739,9 +797,13 @@ public final class Game {
     }
 
     public List<Unit> getUnitsInRadius(final Position center, final int radius, final UnitFilter pred) {
-        return getAllUnits().stream()
-                .filter(u -> center.getApproxDistance(u.getPosition()) <= radius && pred.test(u))
-                .collect(Collectors.toList());
+        return unitsInRadius(center, radius, pred).collect(Collectors.toList());
+    }
+
+    private Stream<Unit> unitsInRadius(final Position center, final int radius, final UnitFilter pred) {
+        return unitFinder.inRectangle((long) center.x - radius, (long) center.y - radius,
+                (long) center.x + radius, (long) center.y + radius)
+                .filter(u -> center.getApproxDistance(u.getPosition()) <= radius && pred.test(u));
     }
 
     public Unit getClosestUnitInRectangle(final Position center, final int left, final int top, final int right, final int bottom) {
@@ -761,7 +823,7 @@ public final class Game {
      * @see UnitFilter
      */
     public Unit getClosestUnitInRectangle(final Position center, final int left, final int top, final int right, final int bottom, final UnitFilter pred) {
-        return getUnitsInRectangle(left, top, right, bottom, pred).stream()
+        return unitsInRectangle(left, top, right, bottom, pred)
                 .min(Comparator.comparingInt(u -> u.getDistance(center)))
                 .orElse(null);
     }
@@ -789,7 +851,7 @@ public final class Game {
      * @see UnitFilter
      */
     public Unit getClosestUnit(final Position center, final int radius, final UnitFilter pred) {
-        return getUnitsInRadius(center, radius, pred).stream()
+        return unitsInRadius(center, radius, pred)
                 .min(Comparator.comparingInt(u -> u.getDistance(center)))
                 .orElse(null);
     }
@@ -1006,7 +1068,11 @@ public final class Game {
      * @return true if the type at the given position will have power, false if the type at the given position will be unpowered.
      */
     final public boolean hasPowerPrecise(final int x, final int y, final UnitType unitType) {
-        return isValidPosition(x, y) && hasPower(x, y, unitType, self().getUnits().stream().filter(u -> u.getType() == Protoss_Pylon).collect(Collectors.toList()));
+        if (!isValidPosition(x, y)) {
+            return false;
+        }
+        updateUnitLists();
+        return hasPower(x, y, unitType, pylons);
     }
 
     final public boolean hasPowerPrecise(final Position position) {

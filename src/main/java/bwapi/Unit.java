@@ -6356,6 +6356,7 @@ public class Unit implements Comparable<Unit> {
         if (frame > lastPositionUpdate) {
             lastPositionUpdate = frame;
             position = new Position(unitData.getPositionX(), unitData.getPositionY());
+            game.unitFinder.reset();
         }
     }
 }

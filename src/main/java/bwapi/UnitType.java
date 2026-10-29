@@ -258,6 +258,11 @@ public enum UnitType {
         this.id = id;
     }
 
+    private static class MaxDimensions {
+        private static final int width = Arrays.stream(UnitType.values()).mapToInt(UnitType::width).max().getAsInt();
+        private static final int height = Arrays.stream(UnitType.values()).mapToInt(UnitType::height).max().getAsInt();
+    }
+
     /**
      * Retrieves the maximum unit width from the set of all units. Used
      * internally to search through unit positions efficiently.
@@ -265,7 +270,7 @@ public enum UnitType {
      * @return The maximum width of all unit types, in pixels.
      */
     public static int maxUnitWidth() {
-        return Arrays.stream(UnitType.values()).max(Comparator.comparingInt(UnitType::width)).get().width();
+        return MaxDimensions.width;
     }
 
     /**
@@ -275,7 +280,7 @@ public enum UnitType {
      * @return The maximum height of all unit types, in pixels.
      */
     public static int maxUnitHeight() {
-        return Arrays.stream(UnitType.values()).max(Comparator.comparingInt(UnitType::height)).get().height();
+        return MaxDimensions.height;
     }
 
     /**
