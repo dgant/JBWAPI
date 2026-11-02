@@ -132,7 +132,7 @@ class Client {
             serverProcID = gameTable.gameInstances[gameTableIndex].serverProcessID;
         }
 
-        if (serverProcID == -1) {
+        if (serverProcID <= 0) {
             System.err.println("No server proc ID");
             return false;
         }
