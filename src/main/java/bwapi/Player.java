@@ -4,6 +4,7 @@ import bwapi.ClientData.PlayerData;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static bwapi.UnitType.*;
 import static bwapi.UpgradeType.*;
@@ -70,7 +71,9 @@ public class Player implements Comparable<Player> {
      * This does not include units that are loaded into transports, @Bunkers, @Refineries, @Assimilators, or @Extractors.
      */
     public List<Unit> getUnits() {
-        return game.getUnits(this);
+        return game.getAllUnits().stream()
+                .filter(u -> equals(u.getPlayer()))
+                .collect(Collectors.toList());
     }
 
     /**
