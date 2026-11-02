@@ -89,11 +89,11 @@ class Client {
 
     boolean connect() {
         if (connected) {
-            System.err.println("Already connected");
+            System.err.println("Attempting to connect, but we are already connected.");
             return true;
         }
 
-        int serverProcID = -1;
+        int serverProcID = Integer.getInteger("bwapi.serverProcessId", -1);
         int gameTableIndex = -1;
 
         // Expose the BWAPI list of games from shared memory via a ByteBuffer
@@ -101,7 +101,7 @@ class Client {
             gameTableShm = clientConnector.getGameTable();
         }
         catch (Exception e) {
-            System.err.println("Game table mapping not found.");
+            System.err.println("Did not find a StarCraft BWAPI game table mapping.");
             return false;
         }
 
@@ -120,7 +120,7 @@ class Client {
         for (int i = 0; i < GameTable.MAX_GAME_INSTANCES; i++) {
             GameInstance gameInstance = gameTable.gameInstances[i];
             System.out.println(i + " | " + gameInstance.serverProcessID + " | " + (gameInstance.isConnected ? 1 : 0) + " | " + gameInstance.lastKeepAliveTime);
-            if (gameInstance.serverProcessID != 0 && !gameInstance.isConnected) {
+            if (serverProcID <= 0 && gameInstance.serverProcessID != 0 && !gameInstance.isConnected) {
                 if (gameTableIndex == -1 || gameInstance.lastKeepAliveTime < oldest) {
                     oldest = gameInstance.lastKeepAliveTime;
                     gameTableIndex = i;
@@ -128,11 +128,11 @@ class Client {
             }
         }
 
-        if (gameTableIndex != -1) {
+        if (serverProcID <= 0 && gameTableIndex != -1) {
             serverProcID = gameTable.gameInstances[gameTableIndex].serverProcessID;
         }
 
-        if (serverProcID == -1) {
+        if (serverProcID <= 0) {
             System.err.println("No server proc ID");
             return false;
         }
@@ -170,10 +170,10 @@ class Client {
             this.gameTableShm = null;
             return false;
         }
-        System.out.println("Connected");
+        System.out.println("Connected to StarCraft with BWAPI");
 
         if (SUPPORTED_BWAPI_VERSION != clientData.gameData().getClient_version()) {
-            System.err.println("Error: Client and Server are not compatible!");
+            System.err.println("Error: BWAPI Client and BWAPI Server have different versions and are not compatible!");
             System.err.println("Client version: " + SUPPORTED_BWAPI_VERSION);
             System.err.println("Server version: " + clientData.gameData().getClient_version());
             disconnect();
@@ -209,7 +209,7 @@ class Client {
         try {
             clientConnector.submitClientData();
         } catch (Exception e) {
-            System.err.println("failed, disconnecting");
+            System.err.println("Sending 'frame done' failed. Will disconnect.");
             if (bwClient.getConfiguration().getDebugConnection()) {
                 e.printStackTrace();
             }
@@ -231,7 +231,7 @@ class Client {
             clientConnector.waitForServerData();
         }
         catch (Exception e) {
-            System.err.println("failed, disconnecting");
+            System.err.println("Reading 'frame ready' failed. Will disconnect.");
             if (bwClient.getConfiguration().getDebugConnection()) {
                 e.printStackTrace();
             }

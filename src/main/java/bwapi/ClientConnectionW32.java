@@ -51,6 +51,9 @@ class ClientConnectionW32 implements ClientConnection {
         final Pointer gameTableView = MappingKernel.INSTANCE.MapViewOfFile(MappingKernel.INSTANCE
                         .OpenFileMapping(READ_WRITE, false, "Local\\bwapi_shared_memory_game_list"), READ_WRITE,
                 0, 0, GameTable.SIZE);
+        if (gameTableView == null) {
+            throw new IllegalStateException("No StarCraft BWAPI game table is available.");
+        }
         return new WrappedBuffer(gameTableView, GameTable.SIZE);
     }
 
