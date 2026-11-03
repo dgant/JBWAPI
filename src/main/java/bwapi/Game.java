@@ -52,16 +52,7 @@ public final class Game {
     private List<Unit> staticGeysers;
     private List<Unit> staticNeutralUnits;
 
-    private List<Unit> cachedUnitSource;
-    private int cachedUnitFrame = -1;
-    private final Map<Player, List<Unit>> unitsByPlayer = new HashMap<>();
-    private final List<Unit> minerals = new ArrayList<>();
-    private final List<Unit> geysers = new ArrayList<>();
-    private final List<Unit> neutralUnits = new ArrayList<>();
-    private final List<Unit> pylons = new ArrayList<>();
     final UnitFinder unitFinder = new UnitFinder(this);
-    private List<Bullet> activeBullets;
-    private int bulletFrame = -1;
 
     // CONSTANT
     private Player[] players;
@@ -163,9 +154,6 @@ public final class Game {
     */
     void init() {
         visibleUnits.clear();
-        cachedUnitSource = null;
-        unitsByPlayer.clear();
-        activeBullets = null;
 
         loadedUnitsCache.reset();
         interceptorsCache.reset();
@@ -367,51 +355,15 @@ public final class Game {
         return allUnits;
     }
 
-    private void updateUnitLists() {
-        // allUnits is replaced for each frame (and when a new game is initialized).
-        final int frame = getFrameCount();
-        if (cachedUnitSource == allUnits && cachedUnitFrame == frame) {
-            return;
-        }
-        unitsByPlayer.values().forEach(List::clear);
-        minerals.clear();
-        geysers.clear();
-        neutralUnits.clear();
-        pylons.clear();
-        for (final Unit unit : allUnits) {
-            final Player player = unit.getPlayer();
-            final UnitType type = unit.getType();
-            unitsByPlayer.computeIfAbsent(player, unused -> new ArrayList<>()).add(unit);
-            if (type.isMineralField()) {
-                minerals.add(unit);
-            }
-            if (type == Resource_Vespene_Geyser) {
-                geysers.add(unit);
-            }
-            if (player.equals(neutral())) {
-                neutralUnits.add(unit);
-            }
-            if (player.equals(self()) && type == Protoss_Pylon) {
-                pylons.add(unit);
-            }
-        }
-        cachedUnitSource = allUnits;
-        cachedUnitFrame = frame;
-    }
-
-    List<Unit> getUnits(final Player player) {
-        updateUnitLists();
-        return new ArrayList<>(unitsByPlayer.getOrDefault(player, Collections.emptyList()));
-    }
-
     /**
      * Retrieves the set of all accessible @minerals in the game.
      *
      * @return List<Unit> containing @minerals
      */
     public List<Unit> getMinerals() {
-        updateUnitLists();
-        return new ArrayList<>(minerals);
+        return getAllUnits().stream()
+                .filter(u -> u.getType().isMineralField())
+                .collect(Collectors.toList());
     }
 
     /**
@@ -420,8 +372,9 @@ public final class Game {
      * @return List<Unit> containing @geysers
      */
     public List<Unit> getGeysers() {
-        updateUnitLists();
-        return new ArrayList<>(geysers);
+        return getAllUnits().stream()
+                .filter(u -> u.getType() == Resource_Vespene_Geyser)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -431,8 +384,9 @@ public final class Game {
      * @return List<Unit> containing all neutral units.
      */
     public List<Unit> getNeutralUnits() {
-        updateUnitLists();
-        return new ArrayList<>(neutralUnits);
+        return getAllUnits().stream()
+                .filter(u -> u.getPlayer().equals(neutral()))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -477,14 +431,9 @@ public final class Game {
      * @return List<Bullet> containing all accessible {@link Bullet} objects.
      */
     public List<Bullet> getBullets() {
-        final int frame = getFrameCount();
-        if (activeBullets == null || bulletFrame != frame) {
-            activeBullets = Arrays.stream(bullets)
-                    .filter(Bullet::exists)
-                    .collect(Collectors.toList());
-            bulletFrame = frame;
-        }
-        return new ArrayList<>(activeBullets);
+        return Arrays.stream(bullets)
+                .filter(Bullet::exists)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -1080,11 +1029,7 @@ public final class Game {
      * @return true if the type at the given position will have power, false if the type at the given position will be unpowered.
      */
     final public boolean hasPowerPrecise(final int x, final int y, final UnitType unitType) {
-        if (!isValidPosition(x, y)) {
-            return false;
-        }
-        updateUnitLists();
-        return hasPower(x, y, unitType, pylons);
+        return isValidPosition(x, y) && hasPower(x, y, unitType, self().getUnits().stream().filter(u -> u.getType() == Protoss_Pylon).collect(Collectors.toList()));
     }
 
     final public boolean hasPowerPrecise(final Position position) {
