@@ -877,11 +877,13 @@ public final class Game {
      * @return true if the mini-tile is walkable and false if it is impassable for ground units.
      */
     final public boolean isWalkable(final int walkX, final int walkY) {
-        return isWalkable(new WalkPosition(walkX, walkY));
+        return walkX >= 0 && walkY >= 0 &&
+                walkX < mapWidth * TILE_WALK_FACTOR && walkY < mapHeight * TILE_WALK_FACTOR &&
+                walkable[walkX][walkY];
     }
 
     final public boolean isWalkable(final WalkPosition position) {
-        return position.isValid(this) && walkable[position.x][position.y];
+        return isWalkable(position.x, position.y);
     }
 
     /**
