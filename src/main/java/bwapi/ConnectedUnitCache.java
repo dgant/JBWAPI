@@ -20,10 +20,11 @@ class ConnectedUnitCache {
      * Avoids previous O(n^2) implementation which would be costly for
      * lategame carrier fights
      */
-    List<Unit> getConnected(final Unit unit) {
+    synchronized List<Unit> getConnected(final Unit unit) {
         final int frame = game.getFrameCount();
         if (lastUpdate < frame) {
-            connectedUnits.values().forEach(List::clear);
+            // Prior-frame results may still be read by asynchronous consumers.
+            connectedUnits.clear();
             for (final Unit u : game.getAllUnits()) {
                 final Unit owner = condition.apply(u);
                 if (owner != null) {
@@ -40,7 +41,7 @@ class ConnectedUnitCache {
         }
         return Collections.unmodifiableList(connectedUnits.get(unit));
     }
-    void reset() {
+    synchronized void reset() {
         lastUpdate = -1;
         connectedUnits.clear();
     }
