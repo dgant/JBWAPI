@@ -20,8 +20,8 @@ class ClientConnectionW32 implements ClientConnection {
      * Opens the BWAPI server's game table and game-state shared-memory mappings.
      * Binding only these two kernel32 functions avoids initializing JNA's full
      * Kernel32 proxy before the client can discover a server.
-     * Measured savings: about 28-31 ms on Windows/Java 8 with JNA 5.18.1
-     * in fresh-JVM startup tests; actual savings depend on the machine.
+     * Measured savings: about 7% of startup time on Windows/Java 8 x86
+     * with JNA 5.18.1 in fresh-JVM startup tests; actual savings depend on the machine.
      */
     interface MappingKernel extends StdCallLibrary {
         MappingKernel INSTANCE = Native.load("kernel32", MappingKernel.class, W32APIOptions.DEFAULT_OPTIONS);
