@@ -10,14 +10,15 @@ import static org.junit.Assert.assertTrue;
 
 public class GameWalkabilityTest {
     @Test
-    public void integerCoordinatesMatchPositionQueriesAcrossTheMap() throws IOException {
+    public void walkabilityQueriesMatchMapDataAcrossTheMap() throws IOException {
         Game game = GameBuilder.createGame();
         boolean foundWalkable = false;
         boolean foundBlocked = false;
         for (int x = 0; x < game.mapWidth() * 4; x++) {
             for (int y = 0; y < game.mapHeight() * 4; y++) {
-                boolean expected = game.isWalkable(new WalkPosition(x, y));
+                boolean expected = game.botClientData().gameData().isWalkable(x, y);
                 assertEquals(expected, game.isWalkable(x, y));
+                assertEquals(expected, game.isWalkable(new WalkPosition(x, y)));
                 foundWalkable |= expected;
                 foundBlocked |= !expected;
             }
@@ -27,15 +28,17 @@ public class GameWalkabilityTest {
     }
 
     @Test
-    public void rejectsCoordinatesOutsideTheMapWithoutIntegerOverflow() throws IOException {
+    public void rejectsOutOfBoundsWalkCoordinates() throws IOException {
         Game game = GameBuilder.createGame();
         int[] invalidX = {-1, Integer.MIN_VALUE, game.mapWidth() * 4, 1 << 29, Integer.MAX_VALUE};
         int[] invalidY = {-1, Integer.MIN_VALUE, game.mapHeight() * 4, 1 << 29, Integer.MAX_VALUE};
         for (int x : invalidX) {
             assertFalse(game.isWalkable(x, 0));
+            assertFalse(game.isWalkable(new WalkPosition(x, 0)));
         }
         for (int y : invalidY) {
             assertFalse(game.isWalkable(0, y));
+            assertFalse(game.isWalkable(new WalkPosition(0, y)));
         }
     }
 }

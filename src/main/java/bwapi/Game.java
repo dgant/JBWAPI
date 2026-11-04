@@ -883,7 +883,7 @@ public final class Game {
     }
 
     final public boolean isWalkable(final WalkPosition position) {
-        return position.isValid(this) && walkable[position.x][position.y];
+        return isWalkable(position.x, position.y);
     }
 
     /**
