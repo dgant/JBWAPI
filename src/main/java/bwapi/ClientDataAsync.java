@@ -8,7 +8,7 @@ package bwapi;
 class ClientDataAsync extends ClientData {
     private WrappedBuffer staticBuffer;
     private PackedWrappedBuffer staticPackedView;
-    PackedWrappedBuffer packedBuffer;
+    volatile PackedWrappedBuffer packedBuffer;
 
     ClientDataAsync() {
         super();

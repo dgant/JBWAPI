@@ -113,7 +113,7 @@ class DumpToClient {
             out.println("import com.sun.jna.Pointer;");
             out.println("");
             out.println("class ClientData {");
-            out.println("    WrappedBuffer buffer;");
+            out.println("    volatile WrappedBuffer buffer;");
             out.println("    GameData gameData;");
             out.println("    ClientData() {");
             out.println("        gameData = createGameData(0);");
@@ -165,7 +165,7 @@ class DumpToClient {
             out.println("class ClientDataAsync extends ClientData {");
             out.println("    private WrappedBuffer staticBuffer;");
             out.println("    private PackedWrappedBuffer staticPackedView;");
-            out.println("    PackedWrappedBuffer packedBuffer;");
+            out.println("    volatile PackedWrappedBuffer packedBuffer;");
             out.println("");
             out.println("    ClientDataAsync() {");
             out.println("        super();");
